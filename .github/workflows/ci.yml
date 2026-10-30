@@ -1,0 +1,53 @@
+# Compila y ejecuta las pruebas en cada push a main y en cada pull request.
+# Windows usa el mismo script que en local (scripts\build.bat, MSVC); Linux usa GCC.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Windows (MSVC)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compilar y probar
+        shell: cmd
+        run: scripts\build.bat release test
+
+      - name: Publicar ejecutables
+        uses: actions/upload-artifact@v4
+        with:
+          name: icpu-windows-x64
+          path: |
+            build/msvc-release/apps/cli/icpu.exe
+            build/msvc-release/apps/gui/icpu-gui.exe
+            LICENSE
+            README.md
+          if-no-files-found: error
+
+  linux:
+    name: Linux (GCC)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Ninja
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Configurar
+        run: cmake --preset release
+
+      - name: Compilar
+        run: cmake --build --preset release
+
+      - name: Probar
+        run: ctest --preset release

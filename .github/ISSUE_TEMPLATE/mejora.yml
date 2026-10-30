@@ -1,0 +1,28 @@
+name: Proponer una mejora
+description: Una idea nueva o un cambio en algo existente
+labels: ["mejora"]
+body:
+  - type: textarea
+    id: problema
+    attributes:
+      label: Qué problema resolvería
+      description: Describe la situación en la que lo echas en falta.
+    validations:
+      required: true
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Propuesta
+      description: Cómo te imaginas que funcionaría (comando, opción, pantalla...).
+    validations:
+      required: true
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas que has considerado
+  - type: checkboxes
+    id: formato
+    attributes:
+      label: Compatibilidad
+      options:
+        - label: La propuesta cambia el formato oculto (las imágenes actuales dejarían de poder extraerse)

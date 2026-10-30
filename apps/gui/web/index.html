@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>I-CPU</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="/favicon.svg" alt="" width="26" height="26">
+      <span class="brand-name">I-CPU</span>
+      <span class="brand-sub">esteganografía cifrada</span>
+      <span id="version" class="badge"></span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Secciones">
+      <button role="tab" id="tabbtn-embed" data-tab="embed" aria-selected="true">Ocultar</button>
+      <button role="tab" id="tabbtn-extract" data-tab="extract" aria-selected="false">Extraer</button>
+      <button role="tab" id="tabbtn-analyze" data-tab="analyze" aria-selected="false">Analizar</button>
+      <button role="tab" id="tabbtn-bench" data-tab="bench" aria-selected="false">Experimento</button>
+    </nav>
+    <button id="shutdown" class="ghost small">Cerrar I-CPU</button>
+  </header>
+
+  <main>
+    <!-- ================= OCULTAR ================= -->
+    <section id="tab-embed" class="panel" role="tabpanel" aria-labelledby="tabbtn-embed">
+      <div class="grid two">
+        <div class="card">
+          <h2><span class="step">1</span>Imagen portadora</h2>
+          <label class="drop" id="embed-cover-drop">
+            <input type="file" id="embed-cover" class="visually-hidden" accept="image/*,.qoi,.pnm,.ppm,.pgm,.pbm,.tga,.psd,.hdr,.pic">
+            <span class="drop-text">Arrastra una imagen aquí o <u>elígela</u></span>
+            <span class="drop-hint">PNG, JPEG, GIF, BMP, TGA, QOI, PNM, PSD, HDR</span>
+          </label>
+          <div id="embed-cover-info"></div>
+        </div>
+
+        <div class="card">
+          <h2><span class="step">2</span>Qué ocultar</h2>
+          <div class="segmented" role="radiogroup" aria-label="Tipo de mensaje">
+            <label><input type="radio" name="embed-kind" value="text" checked><span>Texto</span></label>
+            <label><input type="radio" name="embed-kind" value="file"><span>Fichero</span></label>
+          </div>
+          <textarea id="embed-message" rows="6" placeholder="Escribe aquí el mensaje secreto…"></textarea>
+          <label class="drop small" id="embed-payload-drop" hidden>
+            <input type="file" id="embed-payload" class="visually-hidden">
+            <span class="drop-text">Arrastra un fichero o <u>elígelo</u></span>
+          </label>
+          <p id="embed-size" class="hint"></p>
+
+          <h2><span class="step">3</span>Contraseña</h2>
+          <div class="pw-row">
+            <input type="password" id="embed-password" autocomplete="new-password" placeholder="Contraseña">
+            <button type="button" class="ghost small toggle-pw" data-for="embed-password embed-password2">Mostrar</button>
+          </div>
+          <input type="password" id="embed-password2" autocomplete="new-password" placeholder="Repite la contraseña">
+
+          <details>
+            <summary>Opciones avanzadas</summary>
+            <div class="form-grid">
+              <label>Formato de salida
+                <select id="embed-format">
+                  <option value="auto">Igual que la portadora</option>
+                  <option value="png">PNG (sin pérdida)</option>
+                  <option value="bmp">BMP</option>
+                  <option value="tga">TGA</option>
+                  <option value="qoi">QOI</option>
+                  <option value="ppm">PNM</option>
+                  <option value="jpg">JPEG (dominio DCT)</option>
+                  <option value="gif">GIF (solo portadora GIF)</option>
+                </select>
+              </label>
+              <label>Bits por ranura
+                <select id="embed-bits">
+                  <option value="auto">Automático (el mínimo)</option>
+                  <option value="1">1</option><option value="2">2</option>
+                  <option value="3">3</option><option value="4">4</option>
+                </select>
+              </label>
+              <label>Modo
+                <select id="embed-mode">
+                  <option value="replace">Sustitución LSB</option>
+                  <option value="match">LSB matching (±1)</option>
+                </select>
+              </label>
+              <label>Orden
+                <select id="embed-layout">
+                  <option value="random">Aleatorio (recomendado)</option>
+                  <option value="sequential">Secuencial (solo experimentos)</option>
+                </select>
+              </label>
+              <label>Calidad JPEG
+                <input type="number" id="embed-quality" min="1" max="100" value="90">
+              </label>
+              <label class="check"><input type="checkbox" id="embed-compress" checked> Comprimir el mensaje</label>
+            </div>
+          </details>
+
+          <button id="embed-run" class="primary wide">Ocultar mensaje</button>
+          <div id="embed-status" class="status" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+      <div id="embed-result" class="card result" hidden></div>
+    </section>
+
+    <!-- ================= EXTRAER ================= -->
+    <section id="tab-extract" class="panel" role="tabpanel" aria-labelledby="tabbtn-extract" hidden>
+      <div class="grid two">
+        <div class="card">
+          <h2><span class="step">1</span>Imagen con el mensaje</h2>
+          <label class="drop" id="extract-image-drop">
+            <input type="file" id="extract-image" class="visually-hidden" accept="image/*,.qoi,.pnm,.ppm,.pgm,.tga">
+            <span class="drop-text">Arrastra la imagen aquí o <u>elígela</u></span>
+          </label>
+          <div id="extract-image-info"></div>
+        </div>
+        <div class="card">
+          <h2><span class="step">2</span>Contraseña</h2>
+          <div class="pw-row">
+            <input type="password" id="extract-password" autocomplete="current-password" placeholder="Contraseña">
+            <button type="button" class="ghost small toggle-pw" data-for="extract-password">Mostrar</button>
+          </div>
+          <details>
+            <summary>Opciones avanzadas</summary>
+            <div class="form-grid">
+              <label>Orden usado al ocultar
+                <select id="extract-layout">
+                  <option value="random">Aleatorio</option>
+                  <option value="sequential">Secuencial</option>
+                </select>
+              </label>
+            </div>
+          </details>
+          <button id="extract-run" class="primary wide">Extraer mensaje</button>
+          <div id="extract-status" class="status" role="status" aria-live="polite"></div>
+          <p class="hint">Si la contraseña es incorrecta, la imagen no contiene datos o ha sido modificada,
+            el resultado es el mismo: no se revela cuál de los tres casos es.</p>
+        </div>
+      </div>
+      <div id="extract-result" class="card result" hidden></div>
+    </section>
+
+    <!-- ================= ANALIZAR ================= -->
+    <section id="tab-analyze" class="panel" role="tabpanel" aria-labelledby="tabbtn-analyze" hidden>
+      <div class="grid two">
+        <div class="card">
+          <h2><span class="step">1</span>Imagen a analizar</h2>
+          <label class="drop" id="analyze-image-drop">
+            <input type="file" id="analyze-image" class="visually-hidden" accept="image/*,.qoi,.pnm,.ppm,.pgm,.tga">
+            <span class="drop-text">Arrastra la imagen sospechosa o <u>elígela</u></span>
+          </label>
+          <div id="analyze-image-info"></div>
+        </div>
+        <div class="card">
+          <h2><span class="step">2</span>Portadora original <span class="optional">opcional</span></h2>
+          <label class="drop" id="analyze-cover-drop">
+            <input type="file" id="analyze-cover" class="visually-hidden" accept="image/*,.qoi,.pnm,.ppm,.pgm,.tga">
+            <span class="drop-text">Para medir la distorsión (PSNR, SSIM) y ver el mapa de diferencias</span>
+          </label>
+          <div id="analyze-cover-info"></div>
+          <button id="analyze-run" class="primary wide">Analizar</button>
+          <div id="analyze-status" class="status" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+      <div id="analyze-result" hidden></div>
+    </section>
+
+    <!-- ================= EXPERIMENTO ================= -->
+    <section id="tab-bench" class="panel" role="tabpanel" aria-labelledby="tabbtn-bench" hidden>
+      <div class="grid two">
+        <div class="card">
+          <h2><span class="step">1</span>Portadora</h2>
+          <label class="drop" id="bench-cover-drop">
+            <input type="file" id="bench-cover" class="visually-hidden" accept="image/*,.qoi,.pnm,.ppm,.pgm,.tga,.psd,.hdr,.pic">
+            <span class="drop-text">Arrastra una imagen o <u>elígela</u></span>
+          </label>
+          <div id="bench-cover-info"></div>
+          <p class="hint">Se ocultan mensajes aleatorios variando los parámetros y se mide la distorsión
+            y lo detectable que es cada combinación. Usa Argon2id reducido para ir rápido.</p>
+        </div>
+        <div class="card">
+          <h2><span class="step">2</span>Parámetros</h2>
+          <div class="form-grid">
+            <fieldset>
+              <legend>Bits por ranura</legend>
+              <label class="check"><input type="checkbox" name="bench-bits" value="1" checked> 1</label>
+              <label class="check"><input type="checkbox" name="bench-bits" value="2" checked> 2</label>
+              <label class="check"><input type="checkbox" name="bench-bits" value="3"> 3</label>
+              <label class="check"><input type="checkbox" name="bench-bits" value="4"> 4</label>
+            </fieldset>
+            <fieldset>
+              <legend>Modo</legend>
+              <label class="check"><input type="checkbox" name="bench-modes" value="replace" checked> Sustitución</label>
+              <label class="check"><input type="checkbox" name="bench-modes" value="match" checked> Matching (k = 1)</label>
+            </fieldset>
+            <fieldset>
+              <legend>Orden</legend>
+              <label class="check"><input type="checkbox" name="bench-layouts" value="random" checked> Aleatorio</label>
+              <label class="check"><input type="checkbox" name="bench-layouts" value="sequential" checked> Secuencial</label>
+            </fieldset>
+            <label>Llenado (fracciones de la capacidad)
+              <input type="text" id="bench-fills" value="0.05, 0.1, 0.25, 0.5, 1" spellcheck="false">
+            </label>
+            <label>Formato de salida
+              <select id="bench-format">
+                <option value="auto">Igual que la portadora</option>
+                <option value="png">PNG</option>
+                <option value="bmp">BMP</option>
+                <option value="qoi">QOI</option>
+                <option value="jpg">JPEG (dominio DCT)</option>
+              </select>
+            </label>
+          </div>
+          <button id="bench-run" class="primary wide">Ejecutar experimento</button>
+          <div id="bench-status" class="status" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+      <div id="bench-result" hidden></div>
+    </section>
+  </main>
+
+  <div id="closed" class="closed" hidden>
+    <h1>I-CPU se ha cerrado</h1>
+    <p>Ya puedes cerrar esta pestaña.</p>
+  </div>
+</body>
+</html>

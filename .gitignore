@@ -1,0 +1,21 @@
+# Compilacion
+/build/
+/out/
+compile_commands.json
+*.o
+*.obj
+*.exe
+*.a
+*.lib
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.user
+
+# Salidas generadas por pruebas y experimentos
+/experiments/output/
+/tests/output/
+*.stego.*
