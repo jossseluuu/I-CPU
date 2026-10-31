@@ -45,6 +45,7 @@ SessionKeys derive_session_keys(std::string_view password, const Digest256& salt
     SessionKeys keys;
     keys.encryption = derive_subkey(m, "icpu/v1/encryption");
     keys.placement = derive_subkey(m, "icpu/v1/placement");
+    keys.header = derive_subkey(m, "icpu/v2/header");
     return keys;
 }
 

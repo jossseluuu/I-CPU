@@ -10,6 +10,8 @@ add_executable(icpu
     cmd_info.cpp
     cmd_analyze.cpp
     cmd_bench.cpp
+    help.cpp
+    guided.cpp
 )
 
 target_link_libraries(icpu PRIVATE icpu_core icpu_warnings)

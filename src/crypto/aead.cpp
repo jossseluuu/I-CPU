@@ -32,4 +32,8 @@ std::optional<Bytes> open(const Key256& key, const Nonce& nonce, ByteSpan ad, By
     return plain;
 }
 
+void stream_xor(const Key256& key, const Nonce& nonce, std::uint8_t* data, std::size_t size) {
+    crypto_chacha20_x(data, data, size, key.data(), nonce.data(), 0);
+}
+
 }  // namespace icpu::crypto

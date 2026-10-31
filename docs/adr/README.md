@@ -10,5 +10,6 @@ No se reescriben. Si una decisión cambia, se añade un ADR nuevo que sustituye 
 | [0003](0003-gui-servidor-local-con-token.md) | GUI como servidor web local con token | Aceptada |
 | [0004](0004-informes-en-la-biblioteca.md) | Análisis y experimentos en la biblioteca (`report.hpp`) | Aceptada |
 | [0005](0005-imagenes-de-prueba-generadas.md) | Imágenes de prueba generadas en código | Aceptada |
+| [0006](0006-formato-v2-cabecera-cifrada.md) | Formato v2: cabecera cifrada | Aceptada |
 
 Plantilla: `Contexto` → `Decisión` → `Consecuencias` (y `Alternativas descartadas` si aporta).

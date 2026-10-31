@@ -13,7 +13,8 @@ imagen de forma que, sin la contraseña, no se puede ni leer ni demostrar que ex
   - *frecuencial* (coeficientes DCT): JPEG, sin recomprimir la imagen
   - *paleta* (índices de color, estilo EzStego): GIF, incluidos los animados
 - **Criptografía**: Argon2id (derivación de clave) + XChaCha20-Poly1305 (cifrado autenticado).
-  Las posiciones donde se escribe salen de la contraseña, y el contenedor no tiene cabecera reconocible.
+  Las posiciones donde se escribe salen de la contraseña, y desde la 1.5 también la cabecera va
+  cifrada: en la imagen no queda nada reconocible ([formato v2](docs/adr/0006-formato-v2-cabecera-cifrada.md)).
 - **Estegoanálisis incluido** (chi-cuadrado, análisis RS, chi-cuadrado DCT) y métricas de
   distorsión (PSNR, SSIM) para evaluar lo detectable que es cada configuración.
 - Dos interfaces: **CLI** (`icpu.exe`) y **GUI web local** (`icpu-gui.exe`, un solo ejecutable).
@@ -40,10 +41,22 @@ En otros sistemas: `cmake --preset release && cmake --build --preset release && 
 ### Interfaz gráfica
 
 `icpu-gui.exe` arranca un servidor **solo en 127.0.0.1** y abre el navegador. Tiene cuatro
-pestañas: *Ocultar*, *Extraer*, *Analizar* y *Experimento*. Se cierra con el botón
-"Cerrar I-CPU" o con Ctrl+C en la consola. Opciones: `--port N` y `--no-browser`.
+pestañas: *Ocultar*, *Extraer*, *Analizar* y *Experimento*. Se cierra con el botón de apagado
+(arriba a la derecha) o con Ctrl+C en la consola. Opciones: `--port N` y `--no-browser`.
+
+- **Comparador** antes/después con deslizador, vista de diferencias y **lupa** de píxeles.
+- **Medidor de capacidad** en vivo, medidor de fuerza y **generador de contraseñas**.
+- Pega imágenes con `Ctrl+V` o suéltalas en cualquier parte de la ventana.
+- **Historial** de operaciones (solo nombres y fechas; nunca contraseñas ni contenidos).
+- Experimento con **progreso en vivo** y gráficas interactivas exportables a PNG.
+- Tema claro, oscuro o automático. Funciona **sin conexión**: no carga nada de Internet.
+- Atajos: `Ctrl+Enter` ejecuta, `Alt+1…4` cambia de
+  pestaña, `?` muestra todos.
 
 ### Línea de comandos
+
+Ejecutado **sin argumentos** (o con doble clic), `icpu` entra en un **modo guiado** que pregunta
+paso a paso qué hacer; puedes arrastrar las imágenes a la consola. Con argumentos:
 
 ```bat
 icpu embed foto.png -o secreta.png -m "mensaje"         &rem pide la contraseña
@@ -56,7 +69,8 @@ icpu formats
 ```
 
 La contraseña se toma, por orden, de `--password-file F`, `-p CLAVE`, la variable
-`ICPU_PASSWORD` o el teclado (sin eco). `icpu help` muestra todas las opciones.
+`ICPU_PASSWORD` o el teclado (sin eco). `icpu help` muestra la ayuda general con ejemplos, y
+`icpu help <comando>` (o `icpu <comando> --help`) todas las opciones de un comando.
 
 Códigos de salida: `0` correcto · `2` argumentos · `3` E/S · `4` formato · `5` capacidad ·
 `6` autenticación (contraseña incorrecta, sin mensaje o imagen modificada) · `70` interno.

@@ -13,6 +13,10 @@
 
 #include <string>
 
+namespace httplib {
+class Server;
+}
+
 namespace icpu::gui {
 
 struct ServerConfig {
@@ -22,5 +26,13 @@ struct ServerConfig {
 
 // Bloquea hasta que se cierra el servidor (Ctrl+C o boton "Cerrar" de la web).
 int run_server(const ServerConfig& config);
+
+// Piezas sueltas (las usan run_server y las pruebas):
+// token aleatorio de 128 bits en hexadecimal...
+std::string new_session_token();
+// ...y registro de rutas y comprobaciones de seguridad. `token` y `port` se
+// leen en cada peticion (el puerto solo se conoce tras el bind), asi que deben
+// vivir mientras viva el servidor.
+void configure(httplib::Server& svr, const std::string& token, const int& port);
 
 }  // namespace icpu::gui

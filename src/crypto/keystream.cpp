@@ -32,7 +32,7 @@ std::uint64_t KeyStream::next_u64() {
 std::uint64_t KeyStream::uniform(std::uint64_t bound) {
     require(bound > 0, ErrorCode::Internal, "KeyStream::uniform con cota 0");
     // Se rechazan los valores del ultimo tramo incompleto para que todos los
-    // restos sean equiprobables: @@ICPUL@@ = 2^64 mod bound.
+    // restos sean equiprobables: umbral = 2^64 mod bound.
     const std::uint64_t threshold = (0 - bound) % bound;
     for (;;) {
         const std::uint64_t r = next_u64();

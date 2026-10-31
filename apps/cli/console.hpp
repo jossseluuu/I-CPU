@@ -2,6 +2,7 @@
 // Integracion con la consola: argumentos y salida en UTF-8 (tambien en
 // Windows) y lectura de contrasenas sin eco.
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,10 @@ std::vector<std::string> init_console(int argc, char** argv);
 
 // Lee una linea sin mostrarla por pantalla (devuelve "" si la entrada no es una terminal).
 std::string read_hidden(const std::string& prompt);
+
+// Lee una linea visible en UTF-8 (en Windows via ReadConsoleW: std::cin no
+// recibe bien caracteres no ASCII de la consola). nullopt = fin de la entrada.
+std::optional<std::string> read_line(const std::string& prompt);
 
 bool stdin_is_terminal();
 std::string read_all_stdin();

@@ -45,6 +45,7 @@ add_library(icpu_core STATIC
 )
 
 target_include_directories(icpu_core PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_compile_definitions(icpu_core PRIVATE ICPU_VERSION_STRING="${PROJECT_VERSION}")
 target_link_libraries(icpu_core
     PUBLIC icpu_monocypher icpu_jpeg
     PRIVATE icpu_stb icpu_warnings)

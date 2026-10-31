@@ -24,4 +24,10 @@ Bytes seal(const Key256& key, const Nonce& nonce, ByteSpan ad, ByteSpan plaintex
 // Devuelve std::nullopt si la autenticacion falla (clave incorrecta o datos alterados).
 std::optional<Bytes> open(const Key256& key, const Nonce& nonce, ByteSpan ad, ByteSpan sealed);
 
+// Cifrado de flujo XChaCha20 SIN autenticacion (cifrar y descifrar es la misma
+// operacion: XOR con el flujo). Solo para datos cuya integridad ya protege otro
+// mecanismo; la cabecera v2 se autentica despues como datos asociados del AEAD.
+// Nunca usar la misma (clave, nonce) para dos datos distintos.
+void stream_xor(const Key256& key, const Nonce& nonce, std::uint8_t* data, std::size_t size);
+
 }  // namespace icpu::crypto

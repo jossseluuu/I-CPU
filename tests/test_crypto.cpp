@@ -154,3 +154,22 @@ TEST_CASE("Aleatorio del sistema y RandomBits") {
 }
 
 }  // TEST_SUITE crypto
+
+TEST_SUITE("crypto") {
+
+TEST_CASE("XChaCha20 (stream_xor): involutivo y dependiente de clave y nonce") {
+    const Key256 key = key_from(3);
+    Nonce n1{}, n2{};
+    n2[23] = 1;
+    Bytes data(64, 0x5A);
+    const Bytes original = data;
+    stream_xor(key, n1, data.data(), data.size());
+    CHECK(data != original);
+    Bytes other = original;
+    stream_xor(key, n2, other.data(), other.size());
+    CHECK(other != data);
+    stream_xor(key, n1, data.data(), data.size());
+    CHECK(data == original);
+}
+
+}  // TEST_SUITE crypto

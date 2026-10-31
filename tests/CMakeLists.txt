@@ -15,4 +15,10 @@ add_executable(icpu_tests
 target_include_directories(icpu_tests PRIVATE ${PROJECT_SOURCE_DIR}/apps/cli)
 target_link_libraries(icpu_tests PRIVATE icpu_core icpu_doctest icpu_warnings)
 
+# Pruebas del servidor de la GUI (solo si se compila la GUI)
+if(TARGET icpu_gui_server)
+    target_sources(icpu_tests PRIVATE test_gui.cpp)
+    target_link_libraries(icpu_tests PRIVATE icpu_gui_server)
+endif()
+
 add_test(NAME icpu_tests COMMAND icpu_tests)

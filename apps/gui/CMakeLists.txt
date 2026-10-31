@@ -21,16 +21,18 @@ add_custom_command(
     COMMENT "Embebiendo el frontend web"
     VERBATIM)
 
-add_executable(icpu-gui
-    main.cpp
+# El servidor va en una biblioteca para que las pruebas puedan arrancarlo en un hilo.
+add_library(icpu_gui_server STATIC
     server.cpp
     ${web_assets_cpp}
 )
-
-target_include_directories(icpu-gui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(icpu-gui PRIVATE icpu_core icpu_httplib icpu_warnings)
+target_include_directories(icpu_gui_server PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(icpu_gui_server PUBLIC icpu_core icpu_httplib PRIVATE icpu_warnings)
 if(WIN32)
-    # cpp-httplib exige Windows 10+; ShellExecuteW (abrir el navegador) esta en shell32
-    target_compile_definitions(icpu-gui PRIVATE _WIN32_WINNT=0x0A00)
-    target_link_libraries(icpu-gui PRIVATE shell32)
+    # cpp-httplib exige Windows 10+; ShellExecuteA (abrir el navegador) esta en shell32
+    target_compile_definitions(icpu_gui_server PUBLIC _WIN32_WINNT=0x0A00)
+    target_link_libraries(icpu_gui_server PUBLIC shell32)
 endif()
+
+add_executable(icpu-gui main.cpp)
+target_link_libraries(icpu-gui PRIVATE icpu_gui_server icpu_warnings)

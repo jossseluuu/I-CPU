@@ -21,6 +21,7 @@ struct KdfParams {
 struct SessionKeys {
     Key256 encryption;  // XChaCha20-Poly1305
     Key256 placement;   // flujo ChaCha20 que decide las posiciones
+    Key256 header;      // XChaCha20 que cifra la cabecera (formato v2)
 };
 
 SessionKeys derive_session_keys(std::string_view password, const Digest256& salt,

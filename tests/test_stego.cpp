@@ -321,3 +321,85 @@ TEST_CASE("API: inspect informa dimensiones y capacidades por dominio") {
 }
 
 }  // TEST_SUITE stego
+
+TEST_SUITE("formato") {
+
+namespace {
+
+// Los 30 bytes de cabecera tal como quedan en la imagen (orden secuencial = ranuras 0..239).
+Bytes raw_header(const stego::Carrier& c) {
+    Bytes out(stego::kHeaderBytes, 0);
+    for (std::size_t i = 0; i < stego::kHeaderSlots; ++i)
+        out[i / 8] = static_cast<std::uint8_t>(out[i / 8] | (c.read(i, 1) << (7 - i % 8)));
+    return out;
+}
+
+Bytes embed_sequential(image::Raster& r, std::uint8_t version, const Bytes& payload) {
+    stego::PixelCarrier c(r);
+    stego::EngineParams p;
+    p.layout = stego::Layout::Sequential;
+    p.kdf = test::fast_kdf();
+    p.format_version = version;
+    stego::embed(c, "pw", payload, p);
+    return raw_header(c);
+}
+
+}  // namespace
+
+TEST_CASE("v2 se escribe por defecto y v1 se sigue leyendo") {
+    CHECK(stego::kFormatVersion == 2);
+    const Bytes payload = random_bytes(200);
+    for (const std::uint8_t version : {std::uint8_t(1), std::uint8_t(2)}) {
+        CAPTURE(int(version));
+        for (const auto layout : {stego::Layout::Random, stego::Layout::Sequential}) {
+            image::Raster r = test::natural_raster(48, 40);
+            stego::PixelCarrier c(r);
+            stego::EngineParams p;
+            p.layout = layout;
+            p.kdf = test::fast_kdf();
+            p.format_version = version;
+            stego::embed(c, "pw", payload, p);
+            CHECK(stego::extract(c, "pw", layout, test::fast_kdf()) == payload);
+            CHECK(test::error_of([&] { stego::extract(c, "otra", layout, test::fast_kdf()); }) ==
+                  ErrorCode::Authentication);
+        }
+    }
+    image::Raster r = test::natural_raster(16, 16);
+    stego::PixelCarrier c(r);
+    stego::EngineParams bad;
+    bad.format_version = 3;
+    CHECK(test::error_of([&] { stego::embed(c, "pw", random_bytes(4), bad); }) == ErrorCode::InvalidArgument);
+}
+
+TEST_CASE("v2: la cabecera no deja nada reconocible, ni en orden secuencial") {
+    const Bytes payload = random_bytes(100);
+    // v1: version, params y longitud en claro -> identicos en dos inserciones
+    image::Raster a1 = test::natural_raster(48, 40), b1 = test::natural_raster(48, 40);
+    const Bytes h1a = embed_sequential(a1, 1, payload), h1b = embed_sequential(b1, 1, payload);
+    CHECK(h1a[0] == 1);
+    CHECK(h1a[1] == h1b[1]);
+    CHECK(std::equal(h1a.begin() + 26, h1a.end(), h1b.begin() + 26));
+
+    // v2: todo depende del nonce aleatorio -> los 30 bytes cambian en cada insercion
+    image::Raster a2 = test::natural_raster(48, 40), b2 = test::natural_raster(48, 40);
+    const Bytes h2a = embed_sequential(a2, 2, payload), h2b = embed_sequential(b2, 2, payload);
+    CHECK_FALSE(std::equal(h2a.begin() + 24, h2a.end(), h2b.begin() + 24));
+    CHECK_FALSE(std::equal(h2a.begin(), h2a.begin() + 24, h2b.begin()));
+}
+
+TEST_CASE("v2: alterar un bit de la cabecera cifrada se detecta") {
+    const Bytes payload = random_bytes(64);
+    for (std::size_t bit : {std::size_t(0), std::size_t(200), std::size_t(239)}) {  // nonce y zona cifrada
+        CAPTURE(bit);
+        image::Raster r = test::natural_raster(48, 40);
+        embed_sequential(r, 2, payload);
+        stego::PixelCarrier c(r);
+        REQUIRE(stego::extract(c, "pw", stego::Layout::Sequential, test::fast_kdf()) == payload);
+        crypto::RandomBits rng;
+        c.write(bit, c.read(bit, 1) ^ 1u, 1, stego::EmbedMode::Replace, rng);
+        CHECK(test::error_of([&] { stego::extract(c, "pw", stego::Layout::Sequential, test::fast_kdf()); }) ==
+              ErrorCode::Authentication);
+    }
+}
+
+}  // TEST_SUITE formato

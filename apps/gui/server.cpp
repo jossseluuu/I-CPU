@@ -77,6 +77,13 @@ const char* mime_for(image::ImageFormat f) {
     }
 }
 
+bool browser_can_show(image::ImageFormat f) {
+    return f == image::ImageFormat::Png || f == image::ImageFormat::Jpeg || f == image::ImageFormat::Gif ||
+           f == image::ImageFormat::Bmp;
+}
+
+std::string png_base64(const image::Raster& r) { return base64(image::encode_raster(r, image::ImageFormat::Png)); }
+
 int http_status(ErrorCode code) {
     switch (code) {
         case ErrorCode::InvalidArgument:
@@ -229,6 +236,12 @@ void handle_embed(const httplib::Request& req, httplib::Response& res) {
 
     const EmbedResult r = embed(as_bytes(cover.content), payload, opt, cover.filename);
     const double fill = r.capacity_bytes ? double(r.packed_bytes) / double(r.capacity_bytes) : 0;
+
+    // Para el comparador: pixeles de ambas imagenes, distorsion y mapa de diferencias.
+    const image::Raster cover_px = load_pixels(as_bytes(cover.content), cover.filename);
+    const image::Raster stego_px = load_pixels(r.image, std::string("x.") + image::default_extension(r.format));
+    const analysis::QualityMetrics q = analysis::compare(cover_px, stego_px);
+
     json::Writer w;
     w.begin_object()
         .field("filename", stem_of(cover.filename) + "_icpu." + image::default_extension(r.format))
@@ -250,8 +263,29 @@ void handle_embed(const httplib::Request& req, httplib::Response& res) {
         .key("notes")
         .begin_array();
     for (const auto& n : r.notes) w.value(n);
-    w.end_array().field("image", base64(r.image)).end_object();
+    w.end_array()
+        .key("quality")
+        .begin_object()
+        .field("psnr", q.psnr)
+        .field("ssim", q.ssim)
+        .field("changed_ratio", q.changed_ratio())
+        .field("max_abs_diff", q.max_abs_diff)
+        .end_object()
+        .field("difference_map", png_base64(analysis::difference_map(cover_px, stego_px)));
+    // Vistas previas en PNG solo si el navegador no sabe mostrar el formato original
+    const auto cover_format = image::detect_format(as_bytes(cover.content), lower_extension(utf8_path(cover.filename)));
+    if (!browser_can_show(cover_format)) w.field("cover_preview", png_base64(cover_px));
+    if (!browser_can_show(r.format)) w.field("preview", png_base64(stego_px));
+    w.field("image", base64(r.image)).end_object();
     send_json(res, w);
+}
+
+// Imagen convertida a PNG (para mostrar QOI, TGA, PNM, PSD... que el navegador no entiende).
+void handle_preview(const httplib::Request& req, httplib::Response& res) {
+    const auto& file = require_file(req, "image", "la imagen");
+    const Bytes png = image::encode_raster(load_pixels(as_bytes(file.content), file.filename), image::ImageFormat::Png);
+    res.set_header("Cache-Control", "no-store");
+    res.set_content(reinterpret_cast<const char*>(png.data()), png.size(), "image/png");
 }
 
 void handle_extract(const httplib::Request& req, httplib::Response& res) {
@@ -342,6 +376,8 @@ void handle_analyze(const httplib::Request& req, httplib::Response& res) {
     send_json(res, w);
 }
 
+std::string bench_json(const BenchReport& report);
+
 void handle_bench(const httplib::Request& req, httplib::Response& res) {
     const auto& cover = require_file(req, "cover", "la imagen portadora");
     BenchOptions opt;
@@ -360,12 +396,49 @@ void handle_bench(const httplib::Request& req, httplib::Response& res) {
     for (const auto& s : list_field(req, "layouts", "random,sequential")) opt.layouts.push_back(parse_layout(s));
     opt.output_format = parse_output(field_or(req, "format", "auto"));
 
-    const BenchReport report = bench(as_bytes(cover.content), opt, cover.filename);
+    // Respuesta en streaming, una linea JSON por evento (NDJSON):
+    //   {"type":"progress","done":3,"total":20} ... {"type":"result",...} o {"type":"error",...}
+    // Los datos se copian: el proveedor se ejecuta despues de que vuelva este manejador.
+    auto data = std::make_shared<std::string>(cover.content);
+    res.set_header("Cache-Control", "no-store");
+    res.set_chunked_content_provider(
+        "application/x-ndjson; charset=utf-8",
+        [data, name = cover.filename, opt](std::size_t, httplib::DataSink& sink) {
+            auto write_line = [&sink](const std::string& s) {
+                const std::string line = s + "\n";
+                // Si el navegador se ha ido (pestana cerrada), se aborta el experimento.
+                if (!sink.write(line.data(), line.size())) throw std::runtime_error("cliente desconectado");
+            };
+            try {
+                const BenchReport report = bench(as_bytes(*data), opt, name, [&](std::size_t done, std::size_t total) {
+                    json::Writer p;
+                    p.begin_object()
+                        .field("type", "progress")
+                        .field("done", std::uint64_t(done))
+                        .field("total", std::uint64_t(total))
+                        .end_object();
+                    write_line(p.str());
+                });
+                write_line(bench_json(report));
+            } catch (const Error& e) {
+                json::Writer w;
+                w.begin_object().field("type", "error").field("error", e.what()).end_object();
+                write_line(w.str());
+            } catch (const std::exception&) {
+                return false;
+            }
+            sink.done();
+            return true;
+        });
+}
+
+std::string bench_json(const BenchReport& report) {
     auto write_detection = [](json::Writer& w, const Detection& d) {
         w.field("chi2_p", d.chi_p).field("rs_rate", d.rs_rate).field("dct_chi2_p", d.dct_p);
     };
     json::Writer w;
     w.begin_object()
+        .field("type", "result")
         .field("output", image::format_name(report.output))
         .field("domain", image::domain_name(report.domain));
     if (report.baseline) {
@@ -390,7 +463,7 @@ void handle_bench(const httplib::Request& req, httplib::Response& res) {
         w.field("seconds", r.seconds).end_object();
     }
     w.end_array().end_object();
-    send_json(res, w);
+    return w.str();
 }
 
 void open_in_browser(const std::string& url) {
@@ -405,14 +478,13 @@ void open_in_browser(const std::string& url) {
 
 }  // namespace
 
-int run_server(const ServerConfig& config) {
-    httplib::Server svr;
+std::string new_session_token() { return random_token(); }
+
+void configure(httplib::Server& svr, const std::string& token, const int& port) {
     svr.set_payload_max_length(kMaxUpload);
-    const std::string token = random_token();
-    int port = 0;
 
     // Comprobaciones de seguridad antes de cualquier ruta (ver server.hpp).
-    svr.set_pre_routing_handler([&](const httplib::Request& req, httplib::Response& res) {
+    svr.set_pre_routing_handler([&token, &port](const httplib::Request& req, httplib::Response& res) {
         const std::string host = req.get_header_value("Host");
         const std::string p = std::to_string(port);
         if (host != "127.0.0.1:" + p && host != "localhost:" + p) {
@@ -431,7 +503,8 @@ int run_server(const ServerConfig& config) {
     svr.Post("/api/extract", guarded(handle_extract));
     svr.Post("/api/analyze", guarded(handle_analyze));
     svr.Post("/api/bench", guarded(handle_bench));
-    svr.Post("/api/shutdown", [&](const httplib::Request&, httplib::Response& res) {
+    svr.Post("/api/preview", guarded(handle_preview));
+    svr.Post("/api/shutdown", [&svr](const httplib::Request&, httplib::Response& res) {
         json::Writer w;
         w.begin_object().field("ok", true).end_object();
         send_json(res, w);
@@ -459,6 +532,13 @@ int run_server(const ServerConfig& config) {
         res.set_header("Cache-Control", "no-cache");
         res.set_content(reinterpret_cast<const char*>(a->data), a->size, a->mime);
     });
+}
+
+int run_server(const ServerConfig& config) {
+    httplib::Server svr;
+    const std::string token = new_session_token();
+    int port = 0;
+    configure(svr, token, port);
 
     if (config.port > 0) {
         if (!svr.bind_to_port("127.0.0.1", config.port)) {

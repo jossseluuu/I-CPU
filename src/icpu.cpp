@@ -26,7 +26,8 @@ image::ImageFormat detect_readable(ByteSpan data, std::string_view name) {
 
 }  // namespace
 
-const char* version() { return "1.0.0"; }
+// La version sale de project(VERSION ...) en CMakeLists.txt: una unica fuente de verdad.
+const char* version() { return ICPU_VERSION_STRING; }
 
 EmbedResult embed(ByteSpan cover, const Payload& payload, const EmbedOptions& opt, std::string_view cover_name) {
     require(!opt.password.empty(), ErrorCode::InvalidArgument, "Hace falta una contrasena");

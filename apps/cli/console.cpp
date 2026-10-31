@@ -59,6 +59,34 @@ std::string read_all_stdin() {
     return std::string(std::istreambuf_iterator<char>(std::cin), std::istreambuf_iterator<char>());
 }
 
+std::optional<std::string> read_line(const std::string& prompt) {
+    std::cout << prompt << std::flush;
+#if defined(_WIN32)
+    if (_isatty(_fileno(stdin))) {
+        std::wstring w;
+        wchar_t buf[512];
+        for (;;) {
+            DWORD n = 0;
+            if (!ReadConsoleW(GetStdHandle(STD_INPUT_HANDLE), buf, 512, &n, nullptr) || n == 0) {
+                if (w.empty()) return std::nullopt;
+                break;
+            }
+            w.append(buf, n);
+            if (w.find(L'\n') != std::wstring::npos) break;
+        }
+        while (!w.empty() && (w.back() == L'\n' || w.back() == L'\r')) w.pop_back();
+        if (w.size() == 1 && w[0] == 26) return std::nullopt;  // Ctrl+Z
+        return narrow(w.c_str());
+    }
+#endif
+    std::string line;
+    if (!std::getline(std::cin, line)) return std::nullopt;
+    if (!line.empty() && line.back() == '\r') line.pop_back();
+    // Marca BOM UTF-8 al principio (p. ej. texto enviado por tuberia desde PowerShell)
+    if (line.rfind("\xEF\xBB\xBF", 0) == 0) line.erase(0, 3);
+    return line;
+}
+
 std::string read_hidden(const std::string& prompt) {
     std::cerr << prompt << std::flush;
     std::string result;

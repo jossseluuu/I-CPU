@@ -22,7 +22,8 @@ dos semanas y publicar la corrección con una nota en el [CHANGELOG](CHANGELOG.m
 
 | Versión | Soporte |
 |---|---|
-| 1.0.x | ✅ |
+| 1.5.x | ✅ |
+| 1.0.x | ❌ (actualiza a 1.5: cabecera cifrada) |
 
 ## Qué se considera vulnerabilidad
 
@@ -33,7 +34,7 @@ dos semanas y publicar la corrección con una nota en el [CHANGELOG](CHANGELOG.m
 
 Están documentadas y **no** se consideran vulnerabilidades nuevas (ver
 [limitaciones conocidas](docs/arquitectura.md#8-limitaciones-conocidas)):
-- la cabecera en claro del formato v1;
+- la cabecera en claro de las imágenes creadas con la 1.0 (formato v1), que la 1.5 sigue leyendo;
 - la detectabilidad del orden secuencial, que existe solo para experimentos;
 - la detección mediante estegoanálisis moderno (SRM, redes neuronales);
 - la pérdida del mensaje al recomprimir o editar la imagen.

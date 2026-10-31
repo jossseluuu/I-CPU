@@ -60,15 +60,24 @@ mensaje ──► carga útil ──► (DEFLATE si reduce) ──► XChaCha20-
 **Carga útil** (`stego/payload`): `flags | longitud del nombre | nombre | tamaño original | datos`.
 Se comprime *antes* de cifrar, porque después de cifrar ya no comprime.
 
-**Contenedor** (`stego/engine.hpp`, versión 1):
+**Contenedor** (`stego/engine.hpp`, versión 2, la que se escribe desde la 1.5):
 
-```
-CABECERA (30 bytes, siempre a 1 bit por ranura)          CUERPO (k bits por ranura)
-| versión | parámetros | nonce (24 B) | longitud (4 B) |  | cifrado || MAC (16 B) |
+```text
+CABECERA (30 bytes, siempre a 1 bit por ranura)                 CUERPO (k bits por ranura)
+| nonce (24 B, aleatorio) | E(versión | parámetros | longitud) |  | cifrado || MAC (16 B) |
+E = XChaCha20(clave de cabecera, nonce), 6 bytes
 ```
 
-- La cabecera se autentica como *datos asociados* del AEAD: si cambia un solo bit, el descifrado falla.
+- En la imagen solo hay un nonce aleatorio y texto cifrado: sin la contraseña es indistinguible
+  de ruido, **también en orden secuencial**.
+- La cabecera descifrada se autentica como *datos asociados* del AEAD: si cambia un solo bit
+  (incluido el nonce), el descifrado falla.
 - La cabecera va siempre a 1 bit por ranura porque el receptor aún no conoce *k*.
+- La clave de cabecera es distinta de la del AEAD, así que el mismo nonce nunca se usa dos
+  veces con la misma clave. Ver [ADR 0006](adr/0006-formato-v2-cabecera-cifrada.md).
+
+La **versión 1** (I-CPU 1.0) tenía la misma cabecera pero en claro: `versión | parámetros |
+nonce | longitud`. Se sigue pudiendo leer.
 
 ## 4. Claves y posiciones
 
@@ -77,6 +86,7 @@ sal    = BLAKE2b("icpu/v1/salt/" ‖ dominio ‖ N ‖ material invariante de la
 maestra = Argon2id(contraseña, sal, 64 MiB, 3 pasadas, ad = "icpu/v1/argon2id")
 cifrado     = BLAKE2b(clave = maestra, "icpu/v1/encryption")
 posiciones  = BLAKE2b(clave = maestra, "icpu/v1/placement")
+cabecera    = BLAKE2b(clave = maestra, "icpu/v2/header")      (formato v2)
 ```
 
 - La **sal sale de la propia imagen**, así que no hay que guardarla: el receptor la recalcula.
@@ -86,8 +96,9 @@ posiciones  = BLAKE2b(clave = maestra, "icpu/v1/placement")
 - **Orden aleatorio** (`stego/slot_order`): una permutación Fisher-Yates "perezosa" alimentada
   por ChaCha20 con la clave de posiciones. Genera la permutación solo hasta donde hace falta,
   con una tabla hash mientras se usa poco de la imagen y un vector denso a partir de 1/8.
-- **Extracción**: lee 240 ranuras, comprueba que la cabecera sea plausible (versión, bits
-  reservados a 0, *k* válido, longitud que quepa), lee el cuerpo y descifra. Una contraseña
+- **Extracción**: deriva las claves una sola vez y lee 240 ranuras. Interpreta esos 30 bytes
+  primero como cabecera v2 (descifrándolos) y, si no es plausible, como v1. Comprueba versión,
+  bits reservados a 0, *k* válido y longitud que quepa, lee el cuerpo y descifra. Una contraseña
   incorrecta, una imagen sin mensaje y una imagen alterada dan **el mismo error** a propósito.
 
 ## 5. Modos de escritura
@@ -124,17 +135,33 @@ Resultados típicos con la portadora de ejemplo (`experiments\run_bench.bat`):
 
 Ver [ADR 0003](adr/0003-gui-servidor-local-con-token.md). Es un servidor cpp-httplib en
 127.0.0.1 con la web (`apps/gui/web/`) convertida en arrays de bytes al compilar
-(`embed_assets.cmake`). La API es `POST /api/{info,embed,extract,analyze,bench,shutdown}`
-con formularios multipart y respuestas JSON (imágenes en base64).
+(`embed_assets.cmake`). El servidor es una biblioteca (`icpu_gui_server`) para que las pruebas
+lo arranquen en un hilo (`tests/test_gui.cpp`).
+
+| Ruta | Entrada (multipart) | Respuesta |
+| --- | --- | --- |
+| `POST /api/info` | `image` | JSON: formato, dimensiones, capacidades |
+| `POST /api/embed` | `cover`, `message` o `payload`, `password`, opciones | JSON: imagen (base64), estadísticas, PSNR/SSIM, mapa de diferencias y vistas previas PNG si el navegador no sabe mostrar el formato |
+| `POST /api/extract` | `image`, `password`, `layout` | JSON: texto o fichero (base64) |
+| `POST /api/analyze` | `image`, `cover` opcional | JSON: tests, histogramas, planos de bits, calidad |
+| `POST /api/bench` | `cover`, listas de parámetros | **NDJSON en streaming**: líneas `progress`, y al final `result` o `error` |
+| `POST /api/preview` | `image` | PNG (para QOI, TGA, PNM, PSD…) |
+| `GET /api/version`, `POST /api/shutdown` | — | JSON |
+
+La web no usa bibliotecas externas. El comparador antes/después y la lupa trabajan sobre
+`<canvas>`, y las gráficas son SVG generado en el propio JavaScript (con exportación a PNG).
+El historial guarda en `localStorage` solo el tipo de operación, el nombre del fichero, los
+tamaños y la fecha; las descargas viven en memoria hasta que se recarga la página.
 
 ## 8. Limitaciones conocidas
 
-- **La cabecera no está cifrada**: versión, parámetros y longitud van en claro, y solo los
-  oculta que sus posiciones son secretas. En orden **secuencial** quedan en las primeras
-  240 ranuras con un patrón reconocible. Por eso ese orden es solo para experimentos.
 - Cualquier edición de la imagen (recomprimir, redimensionar, recortar, convertir) destruye el mensaje.
 - El análisis clásico incluido no es el estado del arte: detectores modernos (SRM, redes
   neuronales) detectan cargas mucho menores.
 - `zlib_decompress` de stb falla con un flujo de 0 bytes. Hoy no se alcanza: un mensaje vacío
   nunca se comprime.
+- Las imágenes v1 (I-CPU 1.0) tienen la cabecera en claro. Si importa, conviene volver a
+  ocultar esos mensajes con la 1.5 para que queden en v2.
+- El análisis RS se vuelve inestable cerca del 100 % de llenado (puede devolver ≈ 0 con la
+  imagen llena); el chi-cuadrado sí lo detecta en ese caso.
 - Sin auditoría de seguridad independiente.
