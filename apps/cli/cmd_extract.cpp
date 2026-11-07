@@ -1,11 +1,33 @@
 // icpu extract: recupera el mensaje oculto de una imagen.
 
 #include <iostream>
+#include <system_error>
 
 #include "common.hpp"
+#include "console.hpp"
 #include "icpu/core/file.hpp"
 
 namespace icpu::cli {
+
+namespace {
+
+// El texto viene de quien creo la imagen: en una terminal, las secuencias de escape
+// podrian cambiar el titulo, borrar la pantalla o falsear lo que se muestra.
+std::string for_terminal(const std::string& text) {
+    std::string out;
+    out.reserve(text.size());
+    for (std::size_t i = 0; i < text.size(); ++i) {
+        const auto c = static_cast<unsigned char>(text[i]);
+        const bool c1 = c == 0xC2 && i + 1 < text.size() && static_cast<unsigned char>(text[i + 1]) >= 0x80 &&
+                        static_cast<unsigned char>(text[i + 1]) <= 0x9F;  // U+0080..U+009F en UTF-8
+        if (c1) ++i;
+        const bool control = (c < 0x20 && c != '\n' && c != '\r' && c != '\t') || c == 0x7F || c1;
+        out += control ? '?' : text[i];
+    }
+    return out;
+}
+
+}  // namespace
 
 int cmd_extract(const std::vector<std::string>& tokens) {
     const Args args(tokens, {"--force", "--json"});
@@ -26,9 +48,10 @@ int cmd_extract(const std::vector<std::string>& tokens) {
     if (out) dest = utf8_path(*out);
     else if (p.kind == Payload::Kind::File) dest = utf8_path(p.name.empty() ? "mensaje.bin" : p.name);
     if (!dest.empty()) {
-        if (std::filesystem::is_directory(dest))
+        std::error_code ec;  // un dispositivo como NUL no admite estas consultas: no es un error
+        if (std::filesystem::is_directory(dest, ec))
             dest /= utf8_path(p.name.empty() ? "mensaje.txt" : p.name);
-        if (std::filesystem::exists(dest) && !force)
+        if (std::filesystem::exists(dest, ec) && !force)
             fail(ErrorCode::InvalidArgument, "El fichero ya existe (usa --force): " + path_utf8(dest));
         write_file(dest, p.data);
     }
@@ -44,7 +67,7 @@ int cmd_extract(const std::vector<std::string>& tokens) {
         w.end_object();
         std::cout << w.str() << "\n";
     } else if (dest.empty()) {
-        std::cout << p.as_text();
+        std::cout << (stdout_is_terminal() ? for_terminal(p.as_text()) : p.as_text());
         if (!p.data.empty() && p.data.back() != '\n') std::cout << "\n";
     } else {
         std::cout << (p.kind == Payload::Kind::File ? "Fichero \"" + p.name + "\"" : std::string("Texto"))

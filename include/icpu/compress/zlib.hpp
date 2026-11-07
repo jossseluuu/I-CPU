@@ -9,6 +9,8 @@
 
 namespace icpu::compress {
 
+inline constexpr std::size_t kMaxDecompressedBytes = std::size_t(1) << 30;  // 1 GiB
+
 Bytes zlib_compress(ByteSpan data, int level = 9);
 
 // `expected_size` sirve como comprobacion de integridad adicional.

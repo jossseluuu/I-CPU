@@ -26,8 +26,8 @@ const char* version();
 
 struct EmbedOptions {
     std::string password;
-    unsigned bits_per_slot = 0;  // 0 = automatico: el minimo que permita que quepa el mensaje
-    EmbedMode mode = EmbedMode::Replace;
+    unsigned bits_per_slot = 0;  // 0 = automatico: con Replace, el minimo con el que cabe el mensaje
+    EmbedMode mode = EmbedMode::Adaptive;
     Layout layout = Layout::Random;
     std::optional<image::ImageFormat> output_format;  // por defecto, el de la portadora (o PNG)
     int jpeg_quality = 90;  // solo si hay que comprimir a JPEG una portadora que no lo es
@@ -68,6 +68,7 @@ struct CapacityEntry {
     unsigned bits_per_slot = 1;
     std::uint64_t usable_slots = 0;
     std::size_t message_bytes = 0;  // texto maximo aproximado (sin compresion)
+    std::size_t adaptive_bytes = 0; // lo mismo en modo adaptativo (no depende de k)
 };
 
 struct ImageInfo {

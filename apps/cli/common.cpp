@@ -12,17 +12,18 @@ namespace icpu::cli {
 std::string resolve_password(const Args& args, bool confirm) {
     if (auto file = args.value({"--password-file"})) {
         std::string s = to_string(read_file(utf8_path(*file)));
+        if (s.rfind("\xEF\xBB\xBF", 0) == 0) s.erase(0, 3);  // BOM de editores de Windows
         while (!s.empty() && (s.back() == '\n' || s.back() == '\r')) s.pop_back();
         if (const auto nl = s.find_first_of("\r\n"); nl != std::string::npos) s.resize(nl);
         require(!s.empty(), ErrorCode::InvalidArgument, "El fichero de contrasena esta vacio");
-        return s;
+        return normalize_password(s);
     }
     if (auto p = args.value({"-p", "--password"})) {
         std::cerr << "Aviso: pasar la contrasena por argumento la deja en el historial de la terminal; "
                      "usa --password-file o escribela cuando se pida.\n";
-        return *p;
+        return normalize_password(*p);
     }
-    if (const char* env = std::getenv("ICPU_PASSWORD"); env && *env) return env;
+    if (auto env = environment_utf8("ICPU_PASSWORD")) return normalize_password(*env);
 
     require(stdin_is_terminal(), ErrorCode::InvalidArgument,
             "No hay contrasena: usa --password-file, -p o la variable ICPU_PASSWORD");
@@ -30,7 +31,7 @@ std::string resolve_password(const Args& args, bool confirm) {
     require(!pass.empty(), ErrorCode::InvalidArgument, "La contrasena no puede estar vacia");
     if (confirm && read_hidden("Repite la contrasena: ") != pass)
         fail(ErrorCode::InvalidArgument, "Las contrasenas no coinciden");
-    return pass;
+    return normalize_password(pass);
 }
 
 Layout parse_layout(const std::string& s) {
@@ -42,7 +43,8 @@ Layout parse_layout(const std::string& s) {
 EmbedMode parse_mode(const std::string& s) {
     if (s == "replace" || s == "sustitucion") return EmbedMode::Replace;
     if (s == "match" || s == "matching") return EmbedMode::Match;
-    fail(ErrorCode::InvalidArgument, "Modo desconocido: " + s + " (usa replace o match)");
+    if (s == "adaptive" || s == "adaptativo") return EmbedMode::Adaptive;
+    fail(ErrorCode::InvalidArgument, "Modo desconocido: " + s + " (usa adaptive, match o replace)");
 }
 
 unsigned parse_bits(const std::string& s) {

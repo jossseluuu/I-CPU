@@ -85,6 +85,48 @@ bool PaletteCarrier::write(std::uint64_t slot, std::uint32_t value, unsigned, Em
     return idx != before;
 }
 
+bool PaletteCarrier::flip(std::uint64_t slot, crypto::RandomBits& rng) {
+    return write(slot, read(slot, 1) ^ 1u, 1, EmbedMode::Replace, rng);
+}
+
+double PaletteCarrier::flat_share() const {
+    std::uint64_t flat = 0, total = 0;
+    for (const auto& f : image_.frames) {
+        const std::size_t w = f.width, h = f.height;
+        for (std::size_t y = 1; y < h; ++y)
+            for (std::size_t x = 1; x < w; ++x) {
+                const std::uint8_t v = f.indices[y * w + x];
+                flat += v == f.indices[y * w + x - 1] && v == f.indices[(y - 1) * w + x];
+                ++total;
+            }
+    }
+    return total ? double(flat) / double(total) : 0;
+}
+
+std::vector<float> PaletteCarrier::embedding_costs() const {
+    std::vector<float> costs;
+    costs.reserve(static_cast<std::size_t>(slots_));
+    for (std::size_t fi = 0; fi < frames_.size(); ++fi) {
+        const auto& info = frames_[fi];
+        const auto& f = image_.frames[fi];
+        const Bytes& pal = f.palette(image_.global_palette);
+        std::array<float, 256> by_index;
+        by_index.fill(std::numeric_limits<float>::infinity());
+        for (std::size_t idx = 0; idx < pal.size() / 3; ++idx) {
+            if (!info.pair_ok[idx]) continue;
+            const std::size_t partner = info.order[info.rank[idx] ^ 1u];
+            float distance = 0;
+            for (unsigned c = 0; c < 3; ++c) {
+                const float d = float(pal[idx * 3 + c]) - float(pal[partner * 3 + c]);
+                distance += d * d;
+            }
+            by_index[idx] = 1.0f + distance;
+        }
+        for (const std::uint8_t idx : f.indices) costs.push_back(by_index[idx]);
+    }
+    return costs;
+}
+
 void PaletteCarrier::salt_material(crypto::Blake2b256& hash) const {
     hash.update(image_.header);
     hash.update(image_.global_palette);

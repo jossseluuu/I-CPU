@@ -31,10 +31,12 @@ add_library(icpu_core STATIC
     stego/dct_carrier.cpp
     stego/document.cpp
     stego/engine.cpp
+    stego/legacy.cpp
     stego/palette_carrier.cpp
     stego/payload.cpp
     stego/pixel_carrier.cpp
     stego/slot_order.cpp
+    stego/stc.cpp
     # analysis: metricas y estegoanalisis
     analysis/metrics.cpp
     analysis/steganalysis.cpp
@@ -46,9 +48,10 @@ add_library(icpu_core STATIC
 
 target_include_directories(icpu_core PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_compile_definitions(icpu_core PRIVATE ICPU_VERSION_STRING="${PROJECT_VERSION}")
+find_package(Threads REQUIRED)
 target_link_libraries(icpu_core
     PUBLIC icpu_monocypher icpu_jpeg
-    PRIVATE icpu_stb icpu_warnings)
+    PRIVATE icpu_stb icpu_warnings Threads::Threads)
 if(WIN32)
     target_link_libraries(icpu_core PRIVATE bcrypt)
 endif()

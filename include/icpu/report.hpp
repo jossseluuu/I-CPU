@@ -17,7 +17,7 @@
 
 namespace icpu {
 
-const char* mode_name(EmbedMode mode);      // "replace" / "match"
+const char* mode_name(EmbedMode mode);      // "replace" / "match" / "adaptive"
 const char* layout_name(Layout layout);     // "random" / "sequential"
 
 // Decodifica cualquier imagen legible a pixeles (JPEG descomprimido, GIF:
@@ -48,7 +48,7 @@ const char* rs_verdict(double rate);
 struct BenchOptions {
     std::vector<double> fills{0.05, 0.1, 0.25, 0.5, 1.0};  // fracciones de la capacidad
     std::vector<unsigned> bits{1, 2};
-    std::vector<EmbedMode> modes{EmbedMode::Replace, EmbedMode::Match};
+    std::vector<EmbedMode> modes{EmbedMode::Adaptive, EmbedMode::Replace, EmbedMode::Match};
     std::vector<Layout> layouts{Layout::Random, Layout::Sequential};
     std::optional<image::ImageFormat> output_format;  // por defecto, el de la portadora (o PNG)
     crypto::KdfParams kdf{1024, 1, 1};  // Argon2id rapido: el experimento no mide la KDF
@@ -81,7 +81,8 @@ struct BenchReport {
 };
 
 // Oculta mensajes aleatorios (no comprimibles) para cada combinacion de
-// parametros. LSB matching solo existe con k = 1: el resto de combinaciones se omiten.
+// parametros. LSB matching y el modo adaptativo solo existen con k = 1: el resto
+// de combinaciones se omiten. En modo adaptativo, el llenado es sobre su capacidad prudente.
 BenchReport bench(ByteSpan cover, const BenchOptions& options, std::string_view cover_name = {},
                   const std::function<void(std::size_t done, std::size_t total)>& progress = {});
 

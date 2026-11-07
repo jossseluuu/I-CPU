@@ -1,8 +1,18 @@
 #include "icpu/image/raster.hpp"
 
 #include "icpu/core/error.hpp"
+#include "icpu/image/limits.hpp"
 
 namespace icpu::image {
+
+bool dimensions_allowed(std::uint64_t width, std::uint64_t height) {
+    return width > 0 && height > 0 && width <= kMaxPixels && height <= kMaxPixels && width * height <= kMaxPixels;
+}
+
+void check_dimensions(std::uint64_t width, std::uint64_t height) {
+    require(dimensions_allowed(width, height), ErrorCode::UnsupportedFormat,
+            "La imagen es demasiado grande (maximo 200 megapixeles)");
+}
 
 Raster convert_channels(const Raster& src, std::uint8_t channels) {
     require(channels >= 1 && channels <= 4, ErrorCode::Internal, "Numero de canales invalido");

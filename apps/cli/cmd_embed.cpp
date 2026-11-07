@@ -31,7 +31,7 @@ int cmd_embed(const std::vector<std::string>& tokens) {
 
     EmbedOptions opt;
     opt.bits_per_slot = parse_bits(args.value_or({"--bits"}, "auto"));
-    opt.mode = parse_mode(args.value_or({"--mode"}, "replace"));
+    opt.mode = parse_mode(args.value_or({"--mode"}, "adaptive"));
     opt.layout = parse_layout(args.value_or({"--layout"}, "random"));
     opt.jpeg_quality = parse_int(args.value_or({"--quality"}, "90"), 1, 100, "--quality");
     opt.compress = !args.flag({"--no-compress"});

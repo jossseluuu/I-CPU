@@ -1,6 +1,8 @@
 #include "icpu/stego/payload.hpp"
 
-#include <limits>
+#include <algorithm>
+#include <array>
+#include <cctype>
 
 #include "icpu/compress/zlib.hpp"
 #include "icpu/core/error.hpp"
@@ -14,11 +16,27 @@ constexpr std::uint8_t kFlagFile = 0x02;
 constexpr std::uint8_t kKnownFlags = kFlagCompressed | kFlagFile;
 constexpr std::size_t kFixedOverhead = 1 + 1 + 4;
 
-// Nombre base de una ruta en UTF-8, aceptando '/' y '\\' como separadores.
+// CON, NUL, COM1... abren dispositivos en Windows, con cualquier extension.
+bool reserved_device(std::string_view name) {
+    static constexpr std::array<std::string_view, 4> kPlain = {"con", "prn", "aux", "nul"};
+    std::string stem(name.substr(0, name.find('.')));
+    std::transform(stem.begin(), stem.end(), stem.begin(), [](unsigned char c) { return char(std::tolower(c)); });
+    if (std::find(kPlain.begin(), kPlain.end(), stem) != kPlain.end()) return true;
+    return stem.size() == 4 && (stem.starts_with("com") || stem.starts_with("lpt")) && stem[3] >= '1' && stem[3] <= '9';
+}
+
+// Nombre base de una ruta en UTF-8, aceptando '/' y '\\' como separadores. El nombre
+// viene de quien creo la imagen y debe ser seguro en cualquier sistema: "C:x" es una
+// ruta relativa a otra carpeta en Windows y "x:y" un flujo oculto de NTFS.
 std::string base_name(std::string_view path) {
     const std::size_t cut = path.find_last_of("/\\");
     std::string name(cut == std::string_view::npos ? path : path.substr(cut + 1));
-    if (name == "." || name == "..") name.clear();
+    for (char& c : name) {
+        const auto u = static_cast<unsigned char>(c);
+        if (u < 0x20 || u == 0x7F || std::string_view("<>:\"|?*").find(c) != std::string_view::npos) c = '_';
+    }
+    while (!name.empty() && (name.back() == '.' || name.back() == ' ')) name.pop_back();
+    if (reserved_device(name)) name.insert(name.begin(), '_');
     return name;
 }
 
@@ -59,8 +77,8 @@ std::size_t packed_size_uncompressed(const Payload& payload) {
 
 PackedPayload pack_payload(const Payload& payload, bool allow_compression) {
     require(payload.name.size() <= 255, ErrorCode::InvalidArgument, "Nombre de fichero demasiado largo");
-    require(payload.data.size() <= std::numeric_limits<std::uint32_t>::max(), ErrorCode::InvalidArgument,
-            "Mensaje demasiado grande");
+    require(payload.data.size() <= compress::kMaxDecompressedBytes, ErrorCode::InvalidArgument,
+            "Mensaje demasiado grande (maximo 1 GiB)");
     const std::uint8_t kind_flag = payload.kind == Payload::Kind::File ? kFlagFile : 0;
 
     if (allow_compression && payload.data.size() >= 16) {

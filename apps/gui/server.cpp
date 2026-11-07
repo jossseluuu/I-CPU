@@ -159,6 +159,7 @@ std::vector<std::string> list_field(const httplib::Request& req, const char* key
 EmbedMode parse_mode(const std::string& s) {
     if (s == "replace") return EmbedMode::Replace;
     if (s == "match") return EmbedMode::Match;
+    if (s == "adaptive") return EmbedMode::Adaptive;
     fail(ErrorCode::InvalidArgument, "Modo desconocido: " + s);
 }
 
@@ -208,6 +209,7 @@ void handle_info(const httplib::Request& req, httplib::Response& res) {
             .field("bits_per_slot", c.bits_per_slot)
             .field("usable_slots", c.usable_slots)
             .field("message_bytes", std::uint64_t(c.message_bytes))
+            .field("adaptive_bytes", std::uint64_t(c.adaptive_bytes))
             .end_object();
     w.end_array().end_object();
     send_json(res, w);
@@ -219,7 +221,7 @@ void handle_embed(const httplib::Request& req, httplib::Response& res) {
     opt.password = field_or(req, "password", "");
     const std::string bits = field_or(req, "bits", "auto");
     opt.bits_per_slot = bits == "auto" ? 0u : static_cast<unsigned>(int_field(req, "bits", 0, 1, 4));
-    opt.mode = parse_mode(field_or(req, "mode", "replace"));
+    opt.mode = parse_mode(field_or(req, "mode", "adaptive"));
     opt.layout = parse_layout(field_or(req, "layout", "random"));
     opt.output_format = parse_output(field_or(req, "format", "auto"));
     opt.jpeg_quality = int_field(req, "quality", 90, 1, 100);
@@ -244,7 +246,7 @@ void handle_embed(const httplib::Request& req, httplib::Response& res) {
 
     json::Writer w;
     w.begin_object()
-        .field("filename", stem_of(cover.filename) + "_icpu." + image::default_extension(r.format))
+        .field("filename", stem_of(cover.filename) + "." + image::default_extension(r.format))
         .field("mime", mime_for(r.format))
         .field("format", image::format_name(r.format))
         .field("domain", image::domain_name(r.domain))
@@ -392,7 +394,7 @@ void handle_bench(const httplib::Request& req, httplib::Response& res) {
         opt.fills.push_back(v);
     }
     for (const auto& s : list_field(req, "bits", "1,2")) opt.bits.push_back(static_cast<unsigned>(std::atoi(s.c_str())));
-    for (const auto& s : list_field(req, "modes", "replace,match")) opt.modes.push_back(parse_mode(s));
+    for (const auto& s : list_field(req, "modes", "adaptive,replace,match")) opt.modes.push_back(parse_mode(s));
     for (const auto& s : list_field(req, "layouts", "random,sequential")) opt.layouts.push_back(parse_layout(s));
     opt.output_format = parse_output(field_or(req, "format", "auto"));
 

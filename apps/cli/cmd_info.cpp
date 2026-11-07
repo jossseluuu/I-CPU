@@ -39,6 +39,7 @@ int cmd_info(const std::vector<std::string>& tokens) {
                 .field("bits_per_slot", c.bits_per_slot)
                 .field("usable_slots", c.usable_slots)
                 .field("message_bytes", std::uint64_t(c.message_bytes))
+                .field("adaptive_bytes", std::uint64_t(c.adaptive_bytes))
                 .end_object();
         w.end_array().end_object();
         std::cout << w.str() << "\n";

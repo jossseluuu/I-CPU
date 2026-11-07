@@ -56,11 +56,11 @@ bool ask_yes(const std::string& prompt) {
 void show_capacity(const std::string& path) {
     const ImageInfo info = inspect(read_file(utf8_path(path)), path_utf8(utf8_path(path).filename()));
     std::cout << "  " << image::format_name(info.format) << ", " << info.width << " x " << info.height
-              << " px. Capacidad aproximada (1 bit por ranura):\n";
+              << " px. Capacidad aproximada en modo adaptativo:\n";
     for (const auto& c : info.capacities)
         if (c.bits_per_slot == 1)
             std::cout << "    - salida " << image::format_name(c.output) << " (" << image::domain_name(c.domain)
-                      << "): hasta " << human_bytes(c.message_bytes) << "\n";
+                      << "): hasta " << human_bytes(c.adaptive_bytes) << "\n";
 }
 
 int guided_embed() {
@@ -85,12 +85,13 @@ int guided_embed() {
         tokens.insert(tokens.end(), {"-m", *msg});
     }
 
-    // Salida por defecto: junto a la portadora, "<nombre>_icpu.<ext>" (PNG si el formato no se puede escribir).
+    // Salida por defecto: junto a la portadora, "<nombre>_copia.<ext>" (PNG si el formato no se puede escribir).
+    // El nombre no debe delatar el programa usado.
     const std::filesystem::path cover_path = utf8_path(*cover);
     const auto source = image::format_from_extension(lower_extension(cover_path));
     const std::string ext = image::can_write(source) ? image::default_extension(source) : "png";
     const std::string suggested =
-        path_utf8(cover_path.parent_path() / utf8_path(path_utf8(cover_path.stem()) + "_icpu." + ext));
+        path_utf8(cover_path.parent_path() / utf8_path(path_utf8(cover_path.stem()) + "_copia." + ext));
     const auto out = ask("Imagen de salida [" + suggested + "]: ", suggested);
     if (!out) return 0;
     const std::string out_path = clean_path(*out);

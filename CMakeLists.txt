@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(icpu
-    VERSION 1.5.0
+    VERSION 2.0.0
     DESCRIPTION "Esteganografia cifrada multi-dominio (espacial, DCT y paleta)"
     LANGUAGES C CXX)
 
@@ -18,7 +18,18 @@ endif()
 option(ICPU_BUILD_CLI   "Compilar la interfaz de linea de comandos" ON)
 option(ICPU_BUILD_GUI   "Compilar la interfaz grafica (servidor web local)" ON)
 option(ICPU_BUILD_TESTS "Compilar las pruebas unitarias" ON)
+option(ICPU_BUILD_FUZZ  "Compilar los objetivos de fuzzing (requiere Clang)" OFF)
+option(ICPU_SANITIZE    "Compilar con AddressSanitizer y UBSan" OFF)
 option(ICPU_STATIC_RUNTIME "Enlazar el runtime de C++ de forma estatica (MinGW)" ON)
+
+if(ICPU_SANITIZE)
+    if(MSVC)
+        add_compile_options(/fsanitize=address)
+    else()
+        add_compile_options(-fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer)
+        add_link_options(-fsanitize=address,undefined)
+    endif()
+endif()
 
 # Opciones de aviso comunes solo para el codigo propio (no para third_party).
 add_library(icpu_warnings INTERFACE)
@@ -39,6 +50,11 @@ if(ICPU_STATIC_RUNTIME)
 endif()
 if(MSVC)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS NOMINMAX WIN32_LEAN_AND_MEAN)
+    # Endurecimiento: estos programas procesan imagenes de origen desconocido.
+    if(NOT ICPU_SANITIZE)
+        add_compile_options(/guard:cf)
+        add_link_options(/guard:cf /DYNAMICBASE /NXCOMPAT)
+    endif()
 endif()
 
 add_subdirectory(third_party)
@@ -53,4 +69,7 @@ endif()
 if(ICPU_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+endif()
+if(ICPU_BUILD_FUZZ)
+    add_subdirectory(fuzz)
 endif()

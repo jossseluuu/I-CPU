@@ -3,9 +3,9 @@
 // (R, G, B o gris) de un pixel. El canal alfa no se modifica nunca.
 //
 // - Hasta 4 bits por muestra (k = 1..4).
-// - Sal: se calcula con los 4 bits ALTOS de cada muestra, que no cambian al
-//   insertar (replacement toca solo los k <= 4 bits bajos; matching se fuerza
-//   a no propagar acarreo mas alla del bit 3, ver write()).
+// - Costes adaptativos: HILL (Li et al., 2014). Cambiar una muestra sale barato
+//   donde la imagen tiene textura y muy caro en zonas lisas.
+// - salt_material() solo sirve para leer v1 y v2 (4 bits altos de cada muestra).
 
 #include "icpu/image/raster.hpp"
 #include "icpu/stego/carrier.hpp"
@@ -26,6 +26,13 @@ public:
     std::uint32_t read(std::uint64_t slot, unsigned bits) const override;
     bool write(std::uint64_t slot, std::uint32_t value, unsigned bits, EmbedMode mode,
                crypto::RandomBits& rng) override;
+    bool reserved_usable(std::uint64_t) const override { return true; }
+    std::uint64_t reserved_count() const override { return slots_; }
+    std::vector<float> embedding_costs() const override;
+    std::uint64_t changeable_count() const override { return slots_; }
+    double safe_rate() const override { return 0.25; }
+    bool flip(std::uint64_t slot, crypto::RandomBits& rng) override;
+    double flat_share() const override;
     void salt_material(crypto::Blake2b256& hash) const override;
 
 private:

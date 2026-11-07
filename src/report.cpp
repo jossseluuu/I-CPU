@@ -34,7 +34,13 @@ Detection detect_stego(ByteSpan file, const image::Raster& pixels, image::ImageF
 
 }  // namespace
 
-const char* mode_name(EmbedMode mode) { return mode == EmbedMode::Match ? "match" : "replace"; }
+const char* mode_name(EmbedMode mode) {
+    switch (mode) {
+        case EmbedMode::Match: return "match";
+        case EmbedMode::Adaptive: return "adaptive";
+        default: return "replace";
+    }
+}
 const char* layout_name(Layout layout) { return layout == Layout::Sequential ? "sequential" : "random"; }
 
 image::Raster load_pixels(ByteSpan data, std::string_view name) {
@@ -85,10 +91,10 @@ BenchReport bench(ByteSpan cover, const BenchOptions& opt, std::string_view cove
     if (info.format == report.output) report.baseline = detect_stego(cover, cover_pixels, report.output);
     const std::string stego_name = std::string("x.") + image::default_extension(report.output);
 
-    // Combinaciones validas (LSB matching solo con k = 1)
+    // Combinaciones validas (LSB matching y el modo adaptativo solo con k = 1)
     for (unsigned k : opt.bits)
         for (EmbedMode mode : opt.modes) {
-            if (mode == EmbedMode::Match && k > 1) continue;
+            if (mode != EmbedMode::Replace && k > 1) continue;
             for (Layout layout : opt.layouts)
                 for (double fill : opt.fills) {
                     BenchRun run;
@@ -111,7 +117,8 @@ BenchReport bench(ByteSpan cover, const BenchOptions& opt, std::string_view cove
             run.error = "k no soportado en este dominio";
             continue;
         }
-        run.message_bytes = std::max<std::size_t>(1, std::size_t(run.fill * double(cap->message_bytes)));
+        const std::size_t capacity = run.mode == EmbedMode::Adaptive ? cap->adaptive_bytes : cap->message_bytes;
+        run.message_bytes = std::max<std::size_t>(1, std::size_t(run.fill * double(capacity)));
         std::string message(run.message_bytes, '\0');
         crypto::os_random(reinterpret_cast<std::uint8_t*>(message.data()), message.size());
 

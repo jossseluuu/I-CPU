@@ -19,10 +19,10 @@ echo [demos] PNG (espacial, orden aleatorio)
 "%ICPU%" embed samples\paisaje.png -o samples\demo_mensaje.png -m "%MSG%" --force >nul || exit /b 1
 echo [demos] JPEG (coeficientes DCT)
 "%ICPU%" embed samples\paisaje.png -o samples\demo_mensaje.jpg -m "%MSG%" --force >nul || exit /b 1
-echo [demos] GIF (paleta, EzStego)
+echo [demos] GIF (paleta, estilo EzStego)
 "%ICPU%" embed samples\paisaje.gif -o samples\demo_mensaje.gif -m "%MSG%" --force >nul || exit /b 1
 echo [demos] PNG con un fichero oculto en orden SECUENCIAL (para ver el estegoanalisis)
-"%ICPU%" embed samples\paisaje.png -o samples\demo_secuencial.png -f scripts\generar_muestras.py --no-compress --layout sequential --force >nul 2>nul || exit /b 1
+"%ICPU%" embed samples\paisaje.png -o samples\demo_secuencial.png -f scripts\generar_muestras.py --no-compress --mode replace --layout sequential --force >nul 2>nul || exit /b 1
 
 echo.
 echo [demos] Listo. Prueba:

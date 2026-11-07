@@ -4,6 +4,7 @@
 #include <string>
 
 #include "icpu/core/error.hpp"
+#include "icpu/image/limits.hpp"
 
 namespace icpu::image {
 
@@ -60,7 +61,7 @@ Raster pnm_decode(ByteSpan d) {
     const bool bitmap = kind == 1 || kind == 4;
     const std::uint32_t maxval = bitmap ? 1 : tok.number();
     require(w > 0 && h > 0 && maxval > 0 && maxval <= 65535, ErrorCode::CorruptData, "Cabecera PNM invalida");
-    require(std::uint64_t(w) * h <= 400'000'000ull, ErrorCode::UnsupportedFormat, "Imagen PNM demasiado grande");
+    check_dimensions(w, h);
 
     const std::uint8_t channels = (kind == 3 || kind == 6) ? 3 : 1;
     const std::uint8_t depth = maxval > 255 ? 16 : 8;

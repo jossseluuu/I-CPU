@@ -150,6 +150,7 @@ TEST_CASE("bench: combinaciones validas, referencia y metricas") {
     const Bytes cover = image::png_encode(test::natural_raster(64, 48));
     BenchOptions o;
     o.fills = {0.5};
+    o.modes = {EmbedMode::Replace, EmbedMode::Match};
     o.layouts = {Layout::Random};  // bits {1,2} x modos {replace, match}: match solo con k = 1
     std::size_t last_done = 0, calls = 0;
     const BenchReport r = bench(cover, o, "c.png", [&](std::size_t done, std::size_t total) {

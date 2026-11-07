@@ -123,7 +123,7 @@ TEST_CASE("API: ocultar y extraer de punta a punta") {
     auto r = c.Post("/api/embed", s.auth(), embed_form);
     REQUIRE(r);
     REQUIRE(r->status == 200);
-    CHECK(json_string(r->body, "filename") == "portada_icpu.png");
+    CHECK(json_string(r->body, "filename") == "portada.png");  // sin rastro de la herramienta
     CHECK(r->body.find("\"verified\":true") != std::string::npos);
     CHECK(r->body.find("\"psnr\":") != std::string::npos);
     CHECK_FALSE(json_string(r->body, "difference_map").empty());
@@ -131,7 +131,7 @@ TEST_CASE("API: ocultar y extraer de punta a punta") {
     const std::string stego = base64_decode(json_string(r->body, "image"));
     REQUIRE(stego.size() > 8);
 
-    httplib::UploadFormDataItems extract_form{{"image", stego, "portada_icpu.png", "image/png"},
+    httplib::UploadFormDataItems extract_form{{"image", stego, "portada.png", "image/png"},
                                               {"password", "clave-gui", "", ""}};
     r = c.Post("/api/extract", s.auth(), extract_form);
     REQUIRE(r);

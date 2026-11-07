@@ -11,6 +11,7 @@
 #include <jpeglib.h>
 
 #include "icpu/core/error.hpp"
+#include "icpu/image/limits.hpp"
 
 #if defined(_MSC_VER)
 // C4324: jmp_buf exige alineacion y rellena ErrorManager (inofensivo).
@@ -21,6 +22,8 @@
 namespace icpu::jpeg {
 
 namespace {
+
+constexpr char kTooLarge[] = "imagen demasiado grande (maximo 200 megapixeles)";
 
 // libjpeg informa de los errores llamando a error_exit, que no debe volver.
 // Se usa setjmp/longjmp (patron estandar de libjpeg) y despues se traduce a
@@ -87,6 +90,11 @@ bool read_impl(const unsigned char* data, unsigned long size, CoefImage* out, ch
     jpeg_create_decompress(&d);
     jpeg_mem_src(&d, data, size);
     jpeg_read_header(&d, TRUE);
+    if (!image::dimensions_allowed(d.image_width, d.image_height)) {
+        std::strncpy(msg, kTooLarge, JMSG_LENGTH_MAX - 1);
+        jpeg_destroy_decompress(&d);
+        return false;
+    }
     jvirt_barray_ptr* arrays = jpeg_read_coefficients(&d);
 
     out->width = d.image_width;
@@ -218,6 +226,11 @@ bool decompress_impl(const unsigned char* data, unsigned long size, unsigned cha
     jpeg_create_decompress(&d);
     jpeg_mem_src(&d, data, size);
     jpeg_read_header(&d, TRUE);
+    if (!image::dimensions_allowed(d.image_width, d.image_height)) {
+        std::strncpy(msg, kTooLarge, JMSG_LENGTH_MAX - 1);
+        jpeg_destroy_decompress(&d);
+        return false;
+    }
     d.out_color_space = d.num_components == 1 ? JCS_GRAYSCALE : JCS_RGB;
     jpeg_start_decompress(&d);
     *w = d.output_width;

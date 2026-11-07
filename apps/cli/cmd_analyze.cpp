@@ -172,8 +172,8 @@ int cmd_analyze(const std::vector<std::string>& tokens) {
     if (format == image::ImageFormat::Gif)
         std::cout << "  Nota: en GIF los datos van en los indices de paleta; los tests LSB sobre colores\n"
                      "        son solo orientativos.\n";
-    std::cout << "  (Los tests clasicos detectan bien la sustitucion LSB; LSB matching y el orden\n"
-                 "   aleatorio con poca carga estan pensados precisamente para resistirlos.)\n";
+    std::cout << "  (Los tests clasicos detectan bien la sustitucion LSB, pero no el modo adaptativo:\n"
+                 "   que no salten no demuestra que la imagen este limpia.)\n";
 
     if (quality) {
         std::cout << "\nDistorsion respecto a la portadora:\n";

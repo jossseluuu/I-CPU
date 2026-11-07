@@ -11,6 +11,7 @@
 // color mas oscuro (deterministica, depende solo de la paleta).
 // Ranuras: todos los pixeles de todos los fotogramas, salvo los que usan el
 // color transparente o un par incompleto (invariante por pares).
+// Coste adaptativo: distancia entre los dos colores del par.
 
 #include <array>
 #include <vector>
@@ -34,6 +35,13 @@ public:
     std::uint32_t read(std::uint64_t slot, unsigned bits) const override;
     bool write(std::uint64_t slot, std::uint32_t value, unsigned bits, EmbedMode mode,
                crypto::RandomBits& rng) override;
+    bool reserved_usable(std::uint64_t slot) const override { return usable(slot); }
+    std::uint64_t reserved_count() const override { return usable_; }
+    std::vector<float> embedding_costs() const override;
+    std::uint64_t changeable_count() const override { return usable_; }
+    double safe_rate() const override { return 0.2; }
+    bool flip(std::uint64_t slot, crypto::RandomBits& rng) override;
+    double flat_share() const override;
     void salt_material(crypto::Blake2b256& hash) const override;
 
     // Ordenacion EzStego de una paleta RGB (expuesta para pruebas y analisis).

@@ -4,6 +4,7 @@
 #include <cstring>
 
 #include "icpu/core/error.hpp"
+#include "icpu/image/limits.hpp"
 
 namespace icpu::image {
 
@@ -28,7 +29,7 @@ Raster qoi_decode(ByteSpan d) {
     const std::uint32_t w = get_u32be(d.data() + 4), h = get_u32be(d.data() + 8);
     const std::uint8_t channels = d[12];
     require(w > 0 && h > 0 && (channels == 3 || channels == 4), ErrorCode::CorruptData, "Cabecera QOI invalida");
-    require(std::uint64_t(w) * h <= 400'000'000ull, ErrorCode::UnsupportedFormat, "Imagen QOI demasiado grande");
+    check_dimensions(w, h);
 
     Raster r(w, h, channels, 8);
     std::array<Rgba, 64> index{};

@@ -7,6 +7,7 @@
 #include <stb_image_write.h>
 
 #include "icpu/core/error.hpp"
+#include "icpu/image/limits.hpp"
 #include "icpu/image/pnm.hpp"
 #include "icpu/image/qoi.hpp"
 
@@ -20,6 +21,7 @@ Raster decode_with_stb(ByteSpan data) {
     const auto* buf = data.data();
     const int len = static_cast<int>(data.size());
     int w = 0, h = 0, n = 0;
+    if (stbi_info_from_memory(buf, len, &w, &h, &n)) check_dimensions(std::uint64_t(w), std::uint64_t(h));
     Raster r;
     if (stbi_is_16_bit_from_memory(buf, len)) {
         stbi_us* px = stbi_load_16_from_memory(buf, len, &w, &h, &n, 0);

@@ -74,6 +74,9 @@ image::Raster decode_any(ByteSpan data, ImageFormat source, std::vector<std::str
                             "(guardalo como .gif para conservar la animacion).");
         return gif::first_frame_rgba(g);
     }
+    if (source == ImageFormat::Png)
+        for (const auto& chunk : image::png_read_metadata(data).ancillary)
+            if (chunk.type == "acTL") notes.push_back("El PNG es animado: solo se conserva el primer fotograma.");
     return image::decode_raster(data, source);
 }
 

@@ -53,7 +53,7 @@ int cmd_bench(const std::vector<std::string>& tokens) {
     opt.layouts.clear();
     for (const auto& s : split_list(args.value_or({"--fill"}, "0.05,0.1,0.25,0.5,1"))) opt.fills.push_back(parse_fraction(s));
     for (const auto& s : split_list(args.value_or({"--bits"}, "1,2"))) opt.bits.push_back(parse_bits(s));
-    for (const auto& s : split_list(args.value_or({"--modes"}, "replace,match"))) opt.modes.push_back(parse_mode(s));
+    for (const auto& s : split_list(args.value_or({"--modes"}, "adaptive,replace,match"))) opt.modes.push_back(parse_mode(s));
     for (const auto& s : split_list(args.value_or({"--layouts"}, "random,sequential"))) opt.layouts.push_back(parse_layout(s));
     if (auto f = args.value({"--format"})) opt.output_format = parse_format(*f);
     const auto csv_arg = args.value({"--csv"});

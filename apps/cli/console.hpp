@@ -18,7 +18,15 @@ std::string read_hidden(const std::string& prompt);
 // recibe bien caracteres no ASCII de la consola). nullopt = fin de la entrada.
 std::optional<std::string> read_line(const std::string& prompt);
 
+// Variable de entorno en UTF-8; nullopt si no existe o esta vacia.
+std::optional<std::string> environment_utf8(const char* name);
+
+// Forma canonica NFC: la misma contrasena debe dar los mismos bytes en cualquier
+// sistema, porque "n con tilde" puede escribirse con uno o con dos puntos de codigo.
+std::string normalize_password(const std::string& utf8);
+
 bool stdin_is_terminal();
+bool stdout_is_terminal();
 std::string read_all_stdin();
 
 }  // namespace icpu::cli

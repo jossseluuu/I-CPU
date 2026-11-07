@@ -257,18 +257,15 @@ document.querySelector('.tabs').addEventListener('keydown', (e) => {
 });
 
 // ===========================================================================
-// Historial (persistente: solo metadatos; descargas solo en memoria)
+// Historial (solo en memoria: guardar nombres en disco delataria el uso de la herramienta)
 // ===========================================================================
-const HISTORY_KEY = 'icpu-history';
 const HISTORY_MAX = 60;
-const downloads = new Map(); // id -> { bytes, name, mime } (solo esta sesion)
+const downloads = new Map(); // id -> { bytes, name, mime }
+let historyEntries = [];
+try { localStorage.removeItem('icpu-history'); } catch { /* sin almacenamiento */ } // el de versiones anteriores
 
-function loadHistory() {
-  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
-}
-function saveHistory(list) {
-  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(0, HISTORY_MAX))); } catch { /* sin almacenamiento */ }
-}
+function loadHistory() { return historyEntries; }
+function saveHistory(list) { historyEntries = list.slice(0, HISTORY_MAX); }
 function addHistory(entry, download) {
   const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   if (download) downloads.set(id, download);
@@ -313,7 +310,7 @@ $('history-btn').addEventListener('click', () => toggleHistory());
 $('history-close').addEventListener('click', () => toggleHistory(false));
 $('scrim').addEventListener('click', () => toggleHistory(false));
 $('history-clear').addEventListener('click', () => {
-  if (!confirm('¿Borrar todo el historial de este navegador?')) return;
+  if (!confirm('¿Borrar todo el historial de esta sesión?')) return;
   saveHistory([]);
   downloads.clear();
   renderHistory();
@@ -798,14 +795,16 @@ function updateEmbedMeter() {
     return;
   }
   const bits = $('embed-bits').value;
-  const match = $('embed-mode').value === 'match';
-  const usable = caps.filter((c) => (bits === 'auto' || c.bits_per_slot === Number(bits)) && (!match || c.bits_per_slot === 1));
+  const mode = $('embed-mode').value;
+  const adaptive = mode === 'adaptive';
+  const usable = caps.filter((c) => (mode === 'replace' ? bits === 'auto' || c.bits_per_slot === Number(bits) : c.bits_per_slot === 1));
   const chosen = usable.find((c) => size <= c.message_bytes) || usable[usable.length - 1] || caps[0];
-  const ratio = size / chosen.message_bytes;
+  const capacity = adaptive ? chosen.adaptive_bytes : chosen.message_bytes;
+  const ratio = capacity ? size / capacity : Infinity;
   fill.style.width = `${Math.min(100, ratio * 100)}%`;
   fill.className = `meter-fill ${ratio > 1 ? 'bad' : ratio > 0.7 ? 'warn' : ''}`;
-  label.replaceChildren(h('strong', { text: fmtBytes(size) }), ` de ${fmtBytes(chosen.message_bytes)} (${fmtPct(Math.min(ratio, 9.99), 1)})`);
-  if (ratio <= 1) label.append(` · cabe con ${chosen.bits_per_slot} bit${chosen.bits_per_slot > 1 ? 's' : ''} por ranura`);
+  label.replaceChildren(h('strong', { text: fmtBytes(size) }), ` de ${fmtBytes(capacity)} (${fmtPct(Math.min(ratio, 9.99), 1)})`);
+  if (ratio <= 1) label.append(adaptive ? ' · cabe en modo adaptativo' : ` · cabe con ${chosen.bits_per_slot} bit${chosen.bits_per_slot > 1 ? 's' : ''} por ranura`);
   else label.append(isText && $('embed-compress').checked ? ' · no cabe sin comprimir (la compresión puede bastar)' : ' · no cabe');
 }
 
@@ -884,9 +883,9 @@ for (const btn of document.querySelectorAll('.toggle-pw')) {
 
 $('embed-run').addEventListener('click', () => withBusy($('embed-run'), 'Cifrando y ocultando…', async () => {
   if (!embedState.cover) throw new Error('Elige primero una imagen portadora.');
-  const pw = $('embed-password').value;
+  const pw = $('embed-password').value.normalize('NFC');
   if (!pw) { $('embed-password').focus(); throw new Error('Escribe una contraseña.'); }
-  if (pw !== $('embed-password2').value) { $('embed-password2').focus(); throw new Error('Las contraseñas no coinciden.'); }
+  if (pw !== $('embed-password2').value.normalize('NFC')) { $('embed-password2').focus(); throw new Error('Las contraseñas no coinciden.'); }
   const form = new FormData();
   form.append('cover', embedState.cover);
   if (embedKind() === 'text') {
@@ -965,7 +964,7 @@ $('extract-run').addEventListener('click', () => withBusy($('extract-run'), 'Der
   if (!$('extract-password').value) { $('extract-password').focus(); throw new Error('Escribe la contraseña.'); }
   const form = new FormData();
   form.append('image', extractState.image);
-  form.append('password', $('extract-password').value);
+  form.append('password', $('extract-password').value.normalize('NFC'));
   form.append('layout', $('extract-layout').value);
   let r;
   try {
@@ -1123,7 +1122,7 @@ function updateBenchCount() {
   const layouts = checkedValues('bench-layouts').length;
   const fills = benchFills().length;
   let combos = 0;
-  for (const k of bits) for (const m of modes) if (!(m === 'match' && k > 1)) combos += layouts * fills;
+  for (const k of bits) for (const m of modes) if (m === 'replace' || k === 1) combos += layouts * fills;
   $('bench-count').textContent = combos ? `${combos} combinaciones` : 'Marca al menos un valor en cada grupo';
 }
 for (const el of document.querySelectorAll('#tab-bench input')) el.addEventListener('input', updateBenchCount);
@@ -1177,7 +1176,7 @@ $('bench-run').addEventListener('click', () => withBusy($('bench-run'), 'Ejecuta
   toast(`Experimento terminado en ${((performance.now() - started) / 1000).toFixed(1).replace('.', ',')} s`);
 }));
 
-const MODE_ES = { replace: 'sustitución', match: 'matching' };
+const MODE_ES = { adaptive: 'adaptativo', replace: 'sustitución', match: 'matching' };
 const LAYOUT_ES = { random: 'aleatorio', sequential: 'secuencial' };
 
 function showBench(r) {

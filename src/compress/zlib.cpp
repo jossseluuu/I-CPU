@@ -27,14 +27,15 @@ Bytes zlib_compress(ByteSpan data, int level) {
 Bytes zlib_decompress(ByteSpan data, std::size_t expected_size) {
     require(data.size() < static_cast<std::size_t>(std::numeric_limits<int>::max()), ErrorCode::CorruptData,
             "Datos comprimidos demasiado grandes");
-    int out_len = 0;
-    char* out = stbi_zlib_decode_malloc_guesssize_headerflag(reinterpret_cast<const char*>(data.data()),
-                                                             static_cast<int>(data.size()),
-                                                             static_cast<int>(expected_size) + 1, &out_len, 1);
-    require(out != nullptr, ErrorCode::CorruptData, "Datos comprimidos corruptos");
-    Bytes result(reinterpret_cast<std::uint8_t*>(out), reinterpret_cast<std::uint8_t*>(out) + out_len);
-    std::free(out);
-    require(result.size() == expected_size, ErrorCode::CorruptData, "Tamano descomprimido inesperado");
+    require(expected_size <= kMaxDecompressedBytes, ErrorCode::CorruptData, "Datos descomprimidos demasiado grandes");
+    // Bufer de tamano fijo: un flujo que se expanda mas de lo declarado falla en vez de seguir reservando.
+    Bytes result(expected_size);
+    const int out_len = stbi_zlib_decode_buffer(reinterpret_cast<char*>(result.data()), static_cast<int>(result.size()),
+                                                reinterpret_cast<const char*>(data.data()),
+                                                static_cast<int>(data.size()));
+    require(out_len >= 0, ErrorCode::CorruptData, "Datos comprimidos corruptos");
+    require(static_cast<std::size_t>(out_len) == expected_size, ErrorCode::CorruptData,
+            "Tamano descomprimido inesperado");
     return result;
 }
 

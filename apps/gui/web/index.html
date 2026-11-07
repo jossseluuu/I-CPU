@@ -114,7 +114,7 @@
                   <option value="gif">GIF (solo portadora GIF)</option>
                 </select>
               </label>
-              <label>Bits por ranura
+              <label>Bits por ranura (solo sustitución)
                 <select id="embed-bits">
                   <option value="auto">Automático (el mínimo)</option>
                   <option value="1">1</option><option value="2">2</option>
@@ -123,8 +123,9 @@
               </label>
               <label>Modo
                 <select id="embed-mode">
-                  <option value="replace">Sustitución LSB</option>
-                  <option value="match">LSB matching ±1 (menos detectable)</option>
+                  <option value="adaptive">Adaptativo (recomendado, carga limitada)</option>
+                  <option value="match">LSB matching ±1 (más capacidad, más detectable)</option>
+                  <option value="replace">Sustitución LSB (el más detectable)</option>
                 </select>
               </label>
               <label>Orden
@@ -253,6 +254,7 @@
             </fieldset>
             <fieldset>
               <legend>Modo</legend>
+              <label class="chip"><input type="checkbox" name="bench-modes" value="adaptive" checked><span>Adaptativo</span></label>
               <label class="chip"><input type="checkbox" name="bench-modes" value="replace" checked><span>Sustitución</span></label>
               <label class="chip"><input type="checkbox" name="bench-modes" value="match" checked><span>Matching</span></label>
             </fieldset>
@@ -293,8 +295,8 @@
       <h2>Historial</h2>
       <button class="icon-btn" id="history-close" aria-label="Cerrar historial"><span data-icon="x"></span></button>
     </header>
-    <p class="drawer-note">Solo se guardan nombres, fechas y tamaños en este navegador; nunca contraseñas ni
-      contenidos. Las descargas solo están disponibles mientras no recargues la página.</p>
+    <p class="drawer-note">El historial solo existe en memoria: desaparece al recargar la página y no se
+      guarda nada en el equipo.</p>
     <ol id="history-list" class="history-list"></ol>
     <button class="btn ghost wide" id="history-clear"><span data-icon="trash"></span>Borrar historial</button>
   </aside>

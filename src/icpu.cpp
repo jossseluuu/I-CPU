@@ -12,6 +12,7 @@ namespace icpu {
 namespace {
 
 constexpr std::size_t kPayloadOverhead = 6;  // flags + name_len + original_size
+constexpr double kFlatWarning = 0.5;
 
 std::string extension_of(std::string_view name) {
     return std::filesystem::path(std::string(name)).extension().string();
@@ -40,10 +41,21 @@ EmbedResult embed(ByteSpan cover, const Payload& payload, const EmbedOptions& op
     const stego::PackedPayload packed = stego::pack_payload(payload, opt.compress);
 
     // Eleccion de k: el menor numero de bits por ranura con el que cabe el mensaje
-    // (menos bits = menos distorsion y menos detectable).
+    // (menos bits = menos distorsion y menos detectable). Subir k es decision de
+    // quien pide Replace: el modo adaptativo prefiere fallar a dejar rastro.
     unsigned k = opt.bits_per_slot;
-    const unsigned k_max = opt.mode == EmbedMode::Match ? 1 : carrier.max_bits_per_slot();
-    if (k == 0) {
+    const bool adaptive = opt.mode == EmbedMode::Adaptive;
+    const unsigned k_max = opt.mode == EmbedMode::Replace ? carrier.max_bits_per_slot() : 1;
+    const std::size_t adaptive_capacity = stego::adaptive_payload_bytes(carrier);
+    if (adaptive) {
+        if (k == 0) k = 1;
+        if (packed.bytes.size() > adaptive_capacity)
+            fail(ErrorCode::Capacity,
+                 "El mensaje no cabe de forma prudente: necesita " + std::to_string(packed.bytes.size()) +
+                     " bytes y la imagen admite " + std::to_string(adaptive_capacity) +
+                     " en modo adaptativo. Usa una imagen mayor o con mas textura. Tambien puedes elegir "
+                     "--mode match o --mode replace, que caben mas pero son mas detectables.");
+    } else if (k == 0) {
         for (unsigned candidate = 1; candidate <= k_max && k == 0; ++candidate)
             if (packed.bytes.size() <= stego::max_payload_bytes(carrier, candidate)) k = candidate;
         if (k == 0)
@@ -68,10 +80,15 @@ EmbedResult embed(ByteSpan cover, const Payload& payload, const EmbedOptions& op
     result.message_bytes = payload.data.size();
     result.packed_bytes = packed.bytes.size();
     result.compressed = packed.compressed;
-    result.capacity_bytes = stego::max_payload_bytes(carrier, k);
+    result.capacity_bytes = adaptive ? adaptive_capacity : stego::max_payload_bytes(carrier, k);
     result.usable_slots = carrier.usable_count();
     result.stats = stats;
     result.notes = doc->notes;
+    if (!adaptive)
+        result.notes.push_back("Este modo es mas detectable que el adaptativo: usalo para experimentos.");
+    if (carrier.flat_share() >= kFlatWarning)
+        result.notes.push_back("La imagen tiene muchas zonas lisas, como una captura de pantalla: ahi cualquier "
+                               "cambio queda aislado y es facil de detectar. Usa una foto con textura.");
 
     if (opt.verify) {
         // Prueba de extremo a extremo: lo que se ha escrito en disco debe devolver el mensaje.
@@ -107,6 +124,8 @@ ImageInfo inspect(ByteSpan file, std::string_view name) {
             e.usable_slots = c.usable_count();
             const std::size_t cap = stego::max_payload_bytes(c, k);
             e.message_bytes = cap > kPayloadOverhead ? cap - kPayloadOverhead : 0;
+            const std::size_t adaptive = stego::adaptive_payload_bytes(c);
+            e.adaptive_bytes = adaptive > kPayloadOverhead ? adaptive - kPayloadOverhead : 0;
             info.capacities.push_back(e);
         }
     };

@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "icpu/core/error.hpp"
+#include "icpu/image/limits.hpp"
 
 namespace icpu::gif {
 
@@ -12,6 +13,8 @@ namespace {
 
 constexpr std::uint8_t kExtension = 0x21, kImage = 0x2C, kTrailer = 0x3B, kGraphicControl = 0xF9;
 constexpr unsigned kMaxCodes = 4096;
+// Un codigo de 12 bits produce como mucho 4095 pixeles: ningun GIF real expande mas.
+constexpr std::size_t kMaxLzwExpansion = 2731;
 
 [[noreturn]] void corrupt(const char* what) { fail(ErrorCode::CorruptData, std::string("GIF corrupto: ") + what); }
 
@@ -197,6 +200,7 @@ Image decode(ByteSpan file) {
 
     Bytes pending;
     int pending_transparent = -1;
+    std::uint64_t total_pixels = 0;
     bool trailer = false;
     while (!r.done() && !trailer) {
         const std::uint8_t block = r.u8();
@@ -221,11 +225,18 @@ Image decode(ByteSpan file) {
             f.width = r.u16();
             f.height = r.u16();
             f.packed = r.u8();
+            image::check_dimensions(f.width, f.height);
+            total_pixels += std::uint64_t(f.width) * f.height;
+            require(total_pixels <= image::kMaxTotalPixels, ErrorCode::UnsupportedFormat,
+                    "El GIF tiene demasiados pixeles en total");
             if (f.packed & 0x80) append(f.local_palette, r.take(palette_bytes(f.packed)));
             if (f.palette(img.global_palette).empty()) corrupt("fotograma sin paleta");
             f.min_code_size = r.u8();
             Bytes lzw;
             r.sub_blocks(nullptr, &lzw);
+            // Se comprueba antes de reservar: un fichero minimo no puede pedir gigabytes.
+            if (std::size_t(f.width) * f.height > (lzw.size() + 1) * kMaxLzwExpansion)
+                corrupt("datos LZW insuficientes para las dimensiones del fotograma");
             f.indices = lzw_decode(lzw, f.min_code_size, std::size_t(f.width) * f.height);
             const std::size_t colors = f.palette(img.global_palette).size() / 3;
             for (auto& idx : f.indices)
@@ -238,6 +249,7 @@ Image decode(ByteSpan file) {
         }
     }
     if (img.frames.empty()) corrupt("no contiene imagenes");
+    image::check_dimensions(img.width(), img.height());
     img.trailing_blocks = std::move(pending);
     return img;
 }

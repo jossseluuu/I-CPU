@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <iterator>
 
@@ -29,6 +30,40 @@ std::string narrow(const wchar_t* w) {
 }  // namespace
 #endif
 
+std::optional<std::string> environment_utf8(const char* name) {
+#if defined(_WIN32)
+    // getenv devuelve la pagina de codigos local, no UTF-8: una n con tilde daria otra clave.
+    const std::wstring wide(name, name + std::strlen(name));
+    const wchar_t* value = _wgetenv(wide.c_str());
+    if (value == nullptr || *value == L'\0') return std::nullopt;
+    return narrow(value);
+#else
+    const char* value = std::getenv(name);
+    if (value == nullptr || *value == '\0') return std::nullopt;
+    return std::string(value);
+#endif
+}
+
+std::string normalize_password(const std::string& utf8) {
+#if defined(_WIN32)
+    if (utf8.empty()) return utf8;
+    const int wide_len = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, utf8.data(), static_cast<int>(utf8.size()),
+                                             nullptr, 0);
+    if (wide_len <= 0) return utf8;
+    std::wstring wide(static_cast<std::size_t>(wide_len), L'\0');
+    MultiByteToWideChar(CP_UTF8, 0, utf8.data(), static_cast<int>(utf8.size()), wide.data(), wide_len);
+    const int nfc_len = NormalizeString(NormalizationC, wide.c_str(), wide_len, nullptr, 0);
+    if (nfc_len <= 0) return utf8;
+    std::wstring nfc(static_cast<std::size_t>(nfc_len), L'\0');
+    const int written = NormalizeString(NormalizationC, wide.c_str(), wide_len, nfc.data(), nfc_len);
+    if (written <= 0) return utf8;
+    nfc.resize(static_cast<std::size_t>(written));
+    return narrow(nfc.c_str());
+#else
+    return utf8;  // los terminales de Linux ya envian NFC
+#endif
+}
+
 std::vector<std::string> init_console(int argc, char** argv) {
     std::vector<std::string> args;
 #if defined(_WIN32)
@@ -52,6 +87,14 @@ bool stdin_is_terminal() {
     return _isatty(_fileno(stdin)) != 0;
 #else
     return isatty(STDIN_FILENO) != 0;
+#endif
+}
+
+bool stdout_is_terminal() {
+#if defined(_WIN32)
+    return _isatty(_fileno(stdout)) != 0;
+#else
+    return isatty(STDOUT_FILENO) != 0;
 #endif
 }
 

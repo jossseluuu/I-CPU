@@ -51,3 +51,42 @@ jobs:
 
       - name: Probar
         run: ctest --preset release
+
+  sanitize:
+    name: Linux (ASan + UBSan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Ninja
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Configurar
+        run: cmake --preset sanitize
+
+      - name: Compilar
+        run: cmake --build --preset sanitize
+
+      - name: Probar
+        run: ctest --preset sanitize
+
+  fuzz:
+    name: Fuzzing de los decodificadores
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Ninja
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Compilar con libFuzzer
+        env:
+          CC: clang
+          CXX: clang++
+        run: |
+          cmake -S . -B build/fuzz -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DICPU_BUILD_FUZZ=ON -DICPU_SANITIZE=ON -DICPU_BUILD_CLI=OFF -DICPU_BUILD_GUI=OFF -DICPU_BUILD_TESTS=OFF
+          cmake --build build/fuzz
+
+      - name: Ejecutar dos minutos
+        run: build/fuzz/fuzz/icpu_fuzz_decoders -max_total_time=120 -max_len=65536 -rss_limit_mb=2048 tests/golden

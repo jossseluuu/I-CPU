@@ -16,6 +16,13 @@
       "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
     },
     {
+      "name": "sanitize",
+      "displayName": "ASan + UBSan (Ninja, GCC o Clang)",
+      "inherits": "debug",
+      "binaryDir": "${sourceDir}/build/sanitize",
+      "cacheVariables": { "ICPU_SANITIZE": "ON" }
+    },
+    {
       "name": "msvc-release",
       "displayName": "Release (Ninja + MSVC; requiere vcvars64)",
       "inherits": "release",
@@ -33,12 +40,14 @@
   "buildPresets": [
     { "name": "release", "configurePreset": "release" },
     { "name": "debug", "configurePreset": "debug" },
+    { "name": "sanitize", "configurePreset": "sanitize" },
     { "name": "msvc-release", "configurePreset": "msvc-release" },
     { "name": "msvc-debug", "configurePreset": "msvc-debug" }
   ],
   "testPresets": [
     { "name": "release", "configurePreset": "release", "output": { "outputOnFailure": true } },
     { "name": "debug", "configurePreset": "debug", "output": { "outputOnFailure": true } },
+    { "name": "sanitize", "configurePreset": "sanitize", "output": { "outputOnFailure": true } },
     { "name": "msvc-release", "configurePreset": "msvc-release", "output": { "outputOnFailure": true } },
     { "name": "msvc-debug", "configurePreset": "msvc-debug", "output": { "outputOnFailure": true } }
   ]
