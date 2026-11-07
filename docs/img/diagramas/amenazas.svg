@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 470" width="1200" height="470" role="img" aria-label="Qué protege I-CPU y qué no">
+  <style>
+    .bg { fill: #ffffff; stroke: #e6e7eb; }
+    .t { font: 700 20px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .st { font: 400 13.5px 'Segoe UI', Inter, system-ui, sans-serif; fill: #6b7180; }
+    .ok { fill: #e9f7ee; stroke: #b9e3c8; } .mid { fill: #fef5e6; stroke: #f5d9a8; } .bad { fill: #fdecec; stroke: #f3c3c3; }
+    .okt { fill: #15803d; } .midt { fill: #b45309; } .badt { fill: #c62828; }
+    .k { font: 800 12px 'Segoe UI', Inter, system-ui, sans-serif; letter-spacing: 1.2px; }
+    .h { font: 700 15px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .p { font: 400 12.5px 'Segoe UI', Inter, system-ui, sans-serif; fill: #3c4049; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #15181e; stroke: #262b35; } .ok { fill: #12261a; stroke: #24502f; } .mid { fill: #2a2010; stroke: #4d3a17; } .bad { fill: #2c1517; stroke: #5a2a2d; }
+      .okt { fill: #4ade80; } .midt { fill: #fbbf24; } .badt { fill: #f87171; }
+      .t, .h { fill: #eceef2; } .st { fill: #8f97a6; } .p { fill: #c7cbd3; }
+    }
+  </style>
+  <rect class="bg" x=".5" y=".5" width="1199" height="469" rx="16"/>
+  <text class="t" x="32" y="46">Qué protege y qué no</text>
+  <text class="st" x="32" y="70">Tres preguntas distintas con tres respuestas distintas. Conviene tenerlas claras antes de confiar un secreto a una imagen.</text>
+
+  <g transform="translate(32 96)"><rect class="ok" width="364" height="346" rx="14"/>
+    <text class="k okt" x="20" y="34">FUERTE</text>
+    <text class="h" x="20" y="60">¿Pueden leer el mensaje?</text>
+    <text class="p" x="20" y="92">No sin la contraseña. Argon2id (64 MiB) hace</text>
+    <text class="p" x="20" y="110">caro cada intento y XChaCha20-Poly1305 cifra</text>
+    <text class="p" x="20" y="128">y autentica: alterar un bit se detecta.</text>
+    <text class="p" x="20" y="160">Todo depende de la contraseña: con una débil,</text>
+    <text class="p" x="20" y="178">un ataque de diccionario la encuentra.</text>
+    <text class="p" x="20" y="210"><tspan font-weight="700">Haz:</tspan> usar el generador de la GUI o una</text>
+    <text class="p" x="20" y="228">frase larga de palabras al azar, y pasarla</text>
+    <text class="p" x="20" y="246">por otro canal distinto al de la imagen.</text>
+    <text class="p" x="20" y="286">Primitivas sólidas y conocidas, pero el</text>
+    <text class="p" x="20" y="304">programa no ha pasado una auditoría.</text></g>
+
+  <g transform="translate(418 96)"><rect class="mid" width="364" height="346" rx="14"/>
+    <text class="k midt" x="20" y="34">PARCIAL</text>
+    <text class="h" x="20" y="60">¿Pueden saber que hay un mensaje?</text>
+    <text class="p" x="20" y="92">Con el modo adaptativo y poca carga, los</text>
+    <text class="p" x="20" y="110">ataques clásicos (chi-cuadrado, RS) no lo</text>
+    <text class="p" x="20" y="128">distinguen de una imagen limpia.</text>
+    <text class="p" x="20" y="160">No es indetectable: un detector moderno (SRM,</text>
+    <text class="p" x="20" y="178">redes neuronales) encuentra cargas altas, y no</text>
+    <text class="p" x="20" y="196">se ha evaluado frente a ellos.</text>
+    <text class="p" x="20" y="228"><tspan font-weight="700">Haz:</tspan> usar fotos propias con textura, ocultar</text>
+    <text class="p" x="20" y="246">poco en cada una, no publicar ni reutilizar la</text>
+    <text class="p" x="20" y="264">original: compararlas delata los cambios.</text>
+    <text class="p" x="20" y="304">Evita capturas de pantalla y dibujos planos.</text></g>
+
+  <g transform="translate(804 96)"><rect class="bad" width="364" height="346" rx="14"/>
+    <text class="k badt" x="20" y="34">NINGUNA</text>
+    <text class="h" x="20" y="60">¿Sobrevive si editan la imagen?</text>
+    <text class="p" x="20" y="92">No. Recomprimir, redimensionar, recortar,</text>
+    <text class="p" x="20" y="110">aplicar un filtro o convertir de formato</text>
+    <text class="p" x="20" y="128">destruye el mensaje (y el MAC lo detecta).</text>
+    <text class="p" x="20" y="160">WhatsApp, Instagram, X y la mayoría de redes</text>
+    <text class="p" x="20" y="178">recomprimen todas las imágenes.</text>
+    <text class="p" x="20" y="210"><tspan font-weight="700">Haz:</tspan> enviarla como archivo: correo, Telegram</text>
+    <text class="p" x="20" y="228">«como archivo», Signal como documento, una</text>
+    <text class="p" x="20" y="246">nube o un USB. Y comprobar que se extrae</text>
+    <text class="p" x="20" y="264">del fichero recibido.</text>
+    <text class="p" x="20" y="304">La robustez es otra técnica (marcas de agua).</text></g>
+</svg>

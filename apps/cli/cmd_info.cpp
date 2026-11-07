@@ -56,7 +56,17 @@ int cmd_info(const std::vector<std::string>& tokens) {
         std::cout << "JPEG       : calidad estimada " << info.jpeg_quality
                   << (info.jpeg_progressive ? ", progresivo" : ", secuencial")
                   << (info.jpeg_subsampling.empty() ? "" : ", croma " + info.jpeg_subsampling) << "\n";
-    std::cout << "\nCapacidad maxima (mensaje sin comprimir):\n"
+    // El modo adaptativo (el de por defecto) no depende de los bits por ranura: una fila por salida.
+    std::cout << "\nCapacidad en modo adaptativo (por defecto, carga prudente):\n"
+              << "  Salida  Dominio   Mensaje maximo\n";
+    for (const auto& c : info.capacities) {
+        if (c.bits_per_slot != 1) continue;
+        char line[160];
+        std::snprintf(line, sizeof line, "  %-6s  %-8s  %s\n", image::format_name(c.output),
+                      image::domain_name(c.domain), human_bytes(c.adaptive_bytes).c_str());
+        std::cout << line;
+    }
+    std::cout << "\nCapacidad maxima con --mode replace (mas detectable):\n"
               << "  Salida  Dominio   Bits/ranura  Ranuras utiles   Mensaje maximo\n";
     for (const auto& c : info.capacities) {
         char line[160];

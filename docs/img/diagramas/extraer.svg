@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 430" width="1200" height="430" role="img" aria-label="Cómo extrae I-CPU un mensaje y por qué todos los fallos dan el mismo error">
+  <style>
+    .bg { fill: #ffffff; stroke: #e6e7eb; }
+    .t { font: 700 20px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .st { font: 400 13.5px 'Segoe UI', Inter, system-ui, sans-serif; fill: #6b7180; }
+    .box { fill: #f7f7f8; stroke: #e6e7eb; }
+    .in { fill: #eef0ff; stroke: #c7c9fb; }
+    .ok { fill: #e9f7ee; stroke: #b9e3c8; }
+    .bad { fill: #fdecec; stroke: #f3c3c3; }
+    .q { fill: #fef5e6; stroke: #f5d9a8; }
+    .h { font: 700 14px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .p { font: 400 12px 'Segoe UI', Inter, system-ui, sans-serif; fill: #3c4049; }
+    .lbl { font: 700 11.5px 'Segoe UI', Inter, system-ui, sans-serif; }
+    .y { fill: #15803d; } .no { fill: #c62828; }
+    .a { stroke: #9aa0ab; stroke-width: 1.8; fill: none; }
+    .ab { stroke: #e08a8a; stroke-width: 1.8; fill: none; stroke-dasharray: 5 4; }
+    .ah { fill: #9aa0ab; } .abh { fill: #e08a8a; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #15181e; stroke: #262b35; } .box { fill: #1c2028; stroke: #2c323d; }
+      .in { fill: #20223a; stroke: #3b3e6b; } .ok { fill: #12261a; stroke: #24502f; } .bad { fill: #2c1517; stroke: #5a2a2d; } .q { fill: #2a2010; stroke: #4d3a17; }
+      .t, .h { fill: #eceef2; } .st { fill: #8f97a6; } .p { fill: #c7cbd3; } .y { fill: #4ade80; } .no { fill: #f87171; }
+    }
+  </style>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+    <marker id="arb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="abh"/></marker>
+  </defs>
+  <rect class="bg" x=".5" y=".5" width="1199" height="429" rx="16"/>
+  <text class="t" x="32" y="46">Extraer un mensaje</text>
+  <text class="st" x="32" y="70">El receptor solo necesita la imagen y la contraseña: los parámetros, el tamaño y la versión del formato van cifrados dentro.</text>
+
+  <g transform="translate(32 104)"><rect class="in" width="150" height="104" rx="12"/>
+    <text class="h" x="14" y="28">Entrada</text><text class="p" x="14" y="54">la imagen y la misma</text><text class="p" x="14" y="72">contraseña con la que</text><text class="p" x="14" y="90">se ocultó</text></g>
+  <g transform="translate(212 104)"><rect class="box" width="160" height="104" rx="12"/>
+    <text class="h" x="14" y="28">Leer la sal</text><text class="p" x="14" y="54">16 B en ranuras públicas</text><text class="p" x="14" y="72">(las únicas sin clave)</text></g>
+  <g transform="translate(402 104)"><rect class="box" width="160" height="104" rx="12"/>
+    <text class="h" x="14" y="28">Derivar claves</text><text class="p" x="14" y="54">Argon2id + BLAKE2b,</text><text class="p" x="14" y="72">igual que al ocultar</text></g>
+  <g transform="translate(592 104)"><rect class="q" width="170" height="104" rx="12"/>
+    <text class="h" x="14" y="28">¿Cabecera válida?</text><text class="p" x="14" y="54">Descifrar 30 B: versión,</text><text class="p" x="14" y="72">parámetros y longitud</text><text class="p" x="14" y="90">deben ser plausibles</text></g>
+  <g transform="translate(792 104)"><rect class="q" width="170" height="104" rx="12"/>
+    <text class="h" x="14" y="28">¿El MAC coincide?</text><text class="p" x="14" y="54">Poly1305 autentica el</text><text class="p" x="14" y="72">cuerpo y la cabecera</text><text class="p" x="14" y="90">(datos asociados)</text></g>
+  <g transform="translate(992 104)"><rect class="ok" width="176" height="104" rx="12"/>
+    <text class="h" x="14" y="28">Mensaje</text><text class="p" x="14" y="54">Descomprimir y mostrar</text><text class="p" x="14" y="72">el texto o guardar el</text><text class="p" x="14" y="90">fichero con su nombre</text></g>
+  <path class="a" d="M182 156 H208" marker-end="url(#ar)"/>
+  <path class="a" d="M372 156 H398" marker-end="url(#ar)"/>
+  <path class="a" d="M562 156 H588" marker-end="url(#ar)"/>
+  <path class="a" d="M762 156 H788" marker-end="url(#ar)"/><text class="lbl y" x="768" y="148">sí</text>
+  <path class="a" d="M962 156 H988" marker-end="url(#ar)"/><text class="lbl y" x="968" y="148">sí</text>
+
+  <!-- Compatibilidad y error unico -->
+  <g transform="translate(402 262)"><rect class="box" width="360" height="74" rx="12"/>
+    <text class="h" x="14" y="28">¿Imagen de una versión anterior?</text>
+    <text class="p" x="14" y="52">Se repite con la sal antigua (v2 y v1, solo lectura).</text></g>
+  <g transform="translate(792 262)"><rect class="bad" width="376" height="132" rx="12"/>
+    <text class="h" x="14" y="28">Un único error, siempre el mismo</text>
+    <text class="p" x="14" y="54">«Contraseña incorrecta, la imagen no tiene mensaje</text>
+    <text class="p" x="14" y="72">o se ha modificado» · código de salida 6.</text>
+    <text class="p" x="14" y="98">Es a propósito: distinguir los casos le diría a un</text>
+    <text class="p" x="14" y="116">atacante si la imagen lleva algo.</text></g>
+  <path class="ab" d="M677 208 V258" marker-end="url(#arb)"/><text class="lbl no" x="686" y="238">no</text>
+  <path class="ab" d="M877 208 V258" marker-end="url(#arb)"/><text class="lbl no" x="886" y="238">no</text>
+  <path class="ab" d="M762 300 H788" marker-end="url(#arb)"/><text class="lbl no" x="762" y="292">tampoco</text>
+  <path class="a" d="M420 262 V230 H310 V212" marker-end="url(#ar)"/><text class="p" x="320" y="248">reintento</text>
+</svg>

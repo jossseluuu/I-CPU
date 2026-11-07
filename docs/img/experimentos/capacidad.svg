@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 416" width="760" height="416" role="img" aria-label="Cuánto cabe en una imagen de 480 × 320">
+<style>
+  .bg { fill: #ffffff; stroke: #e6e7eb; }
+  .t { fill: #111318; font: 700 17px 'Segoe UI', Inter, system-ui, sans-serif; }
+  .st { fill: #6b7180; font: 400 12.5px 'Segoe UI', Inter, system-ui, sans-serif; }
+  .ax { fill: #6b7180; font: 400 11.5px 'Segoe UI', Inter, system-ui, sans-serif; }
+  .axl { fill: #3c4049; font: 600 12px 'Segoe UI', Inter, system-ui, sans-serif; }
+  .lg { fill: #3c4049; font: 500 12px 'Segoe UI', Inter, system-ui, sans-serif; }
+  .lbl { fill: #111318; font: 600 12px 'Segoe UI', Inter, system-ui, sans-serif; }
+  .grid { stroke: #eef0f3; }
+  .axis { stroke: #d4d6dc; }
+  .thr { stroke: #c62828; stroke-dasharray: 4 4; opacity: .7; }
+  .thrt { fill: #c62828; font: 500 11px 'Segoe UI', Inter, system-ui, sans-serif; }
+  .band { fill: #fdecec; }
+  @media (prefers-color-scheme: dark) {
+    .bg { fill: #15181e; stroke: #262b35; }
+    .t, .lbl { fill: #eceef2; } .st, .ax { fill: #8f97a6; } .axl, .lg { fill: #c7cbd3; }
+    .grid { stroke: #222731; } .axis { stroke: #343a46; }
+    .thr { stroke: #f87171; } .thrt { fill: #f87171; } .band { fill: #2c1517; }
+  }
+</style>
+<rect class="bg" x=".5" y=".5" width="759" height="415" rx="14"/>
+<text class="t" x="24" y="36">Cuánto cabe en una imagen de 480 × 320</text><text class="st" x="24" y="56">Mensaje máximo sin comprimir · el modo adaptativo limita la carga a propósito para ser menos detectable</text><text class="lbl" x="24" y="98">PNG (espacial)</text><line class="grid" x1="24" x2="736" y1="105" y2="105"/><rect x="140" y="112" width="33.07499473929789" height="18" rx="4" fill="#4f46e5"/><text class="ax" x="181.0749947392979" y="125">13,3 KiB</text><text class="lg" x="130" y="125" text-anchor="end">adaptativo</text><rect x="140" y="138" width="132.45999579143836" height="18" rx="4" fill="#ea580c"/><text class="ax" x="280.45999579143836" y="151">53,4 KiB</text><text class="lg" x="130" y="151" text-anchor="end">replace, k = 1</text><rect x="140" y="164" width="264.97333052762554" height="18" rx="4" fill="#c026d3"/><text class="ax" x="412.97333052762554" y="177">106,7 KiB</text><text class="lg" x="130" y="177" text-anchor="end">replace, k = 2</text><rect x="140" y="190" width="530" height="18" rx="4" fill="#9333ea"/><text class="ax" x="678" y="203">213,5 KiB</text><text class="lg" x="130" y="203" text-anchor="end">replace, k = 4</text><text class="lbl" x="24" y="240">JPEG (DCT)</text><line class="grid" x1="24" x2="736" y1="247" y2="247"/><rect x="140" y="254" width="2.8657560315093065" height="18" rx="4" fill="#4f46e5"/><text class="ax" x="150.8657560315093" y="267">1,2 KiB</text><text class="lg" x="130" y="267" text-anchor="end">adaptativo</text><rect x="140" y="280" width="4.119221233108561" height="18" rx="4" fill="#ea580c"/><text class="ax" x="152.11922123310856" y="293">1,7 KiB</text><text class="lg" x="130" y="293" text-anchor="end">replace</text><text class="lbl" x="24" y="330">GIF (paleta)</text><line class="grid" x1="24" x2="736" y1="337" y2="337"/><rect x="140" y="344" width="8.09539711439055" height="18" rx="4" fill="#4f46e5"/><text class="ax" x="156.09539711439055" y="357">3,3 KiB</text><text class="lg" x="130" y="357" text-anchor="end">adaptativo</text><rect x="140" y="370" width="40.697614843414044" height="18" rx="4" fill="#ea580c"/><text class="ax" x="188.69761484341404" y="383">16,4 KiB</text><text class="lg" x="130" y="383" text-anchor="end">replace</text>
+</svg>

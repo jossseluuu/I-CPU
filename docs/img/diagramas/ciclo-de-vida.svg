@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="1200" height="420" role="img" aria-label="Ciclo de vida de icpu-gui: arranque, instancia única, servicio y cierre">
+  <style>
+    .bg { fill: #ffffff; stroke: #e6e7eb; }
+    .t { font: 700 20px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .st { font: 400 13.5px 'Segoe UI', Inter, system-ui, sans-serif; fill: #6b7180; }
+    .box { fill: #f7f7f8; stroke: #e6e7eb; } .in { fill: #eef0ff; stroke: #c7c9fb; } .q { fill: #fef5e6; stroke: #f5d9a8; }
+    .ok { fill: #e9f7ee; stroke: #b9e3c8; } .bad { fill: #fdecec; stroke: #f3c3c3; }
+    .h { font: 700 14px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .p { font: 400 12px 'Segoe UI', Inter, system-ui, sans-serif; fill: #3c4049; }
+    .lbl { font: 700 11.5px 'Segoe UI', Inter, system-ui, sans-serif; fill: #6b7180; }
+    .a { stroke: #9aa0ab; stroke-width: 1.8; fill: none; } .ah { fill: #9aa0ab; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #15181e; stroke: #262b35; } .box { fill: #1c2028; stroke: #2c323d; } .in { fill: #20223a; stroke: #3b3e6b; } .q { fill: #2a2010; stroke: #4d3a17; }
+      .ok { fill: #12261a; stroke: #24502f; } .bad { fill: #2c1517; stroke: #5a2a2d; }
+      .t, .h { fill: #eceef2; } .st, .lbl { fill: #8f97a6; } .p { fill: #c7cbd3; }
+    }
+  </style>
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+  <rect class="bg" x=".5" y=".5" width="1199" height="419" rx="16"/>
+  <text class="t" x="32" y="46">Ciclo de vida de icpu-gui</text>
+  <text class="st" x="32" y="70">Un solo proceso, sin servidores olvidados: se cierra de cuatro formas y nunca espera indefinidamente a una operación.</text>
+
+  <g transform="translate(32 104)"><rect class="in" width="170" height="92" rx="12"/>
+    <text class="h" x="16" y="28">Arranque</text><text class="p" x="16" y="52">doble clic o</text><text class="p" x="16" y="70">icpu-gui.exe</text></g>
+  <g transform="translate(236 104)"><rect class="q" width="190" height="92" rx="12"/>
+    <text class="h" x="16" y="28">¿Ya hay uno abierto?</text><text class="p" x="16" y="52">mutex con nombre</text><text class="p" x="16" y="70">(solo en Windows)</text></g>
+  <g transform="translate(236 252)"><rect class="ok" width="190" height="112" rx="12"/>
+    <text class="h" x="16" y="28">Reutilizarlo</text><text class="p" x="16" y="52">Le pide abrir otra pestaña</text><text class="p" x="16" y="70">con su enlace y termina.</text><text class="p" x="16" y="88">El token no sale del proceso.</text></g>
+  <g transform="translate(460 104)"><rect class="box" width="214" height="92" rx="12"/>
+    <text class="h" x="16" y="28">Sirviendo</text><text class="p" x="16" y="52">token nuevo, puerto libre,</text><text class="p" x="16" y="70">abre el navegador</text></g>
+  <g transform="translate(460 252)"><rect class="box" width="214" height="112" rx="12"/>
+    <text class="h" x="16" y="28">Pestañas</text><text class="p" x="16" y="52">«hola» al cargar, aviso cada</text><text class="p" x="16" y="70">20 s y «adiós» al cerrarse.</text><text class="p" x="16" y="88">Si el servidor desaparece, la</text><text class="p" x="16" y="106">pestaña lo dice.</text></g>
+  <g transform="translate(712 92)"><rect class="q" width="250" height="168" rx="12"/>
+    <text class="h" x="16" y="28">Orden de cierre</text>
+    <text class="p" x="16" y="54">• botón de apagado de la web</text>
+    <text class="p" x="16" y="76">• Ctrl+C en la consola</text>
+    <text class="p" x="16" y="98">• cerrar la ventana de la consola</text>
+    <text class="p" x="16" y="120">• ninguna pestaña abierta durante</text>
+    <text class="p" x="28" y="138">10 s (o sin avisos en 150 s)</text></g>
+  <g transform="translate(996 92)"><rect class="bad" width="172" height="168" rx="12"/>
+    <text class="h" x="16" y="28">Cierre</text>
+    <text class="p" x="16" y="54">Deja salir la respuesta,</text>
+    <text class="p" x="16" y="72">detiene el servidor y</text>
+    <text class="p" x="16" y="90">espera 2 s como máximo.</text>
+    <text class="p" x="16" y="116">Si sigue algo en marcha</text>
+    <text class="p" x="16" y="134">(un experimento), se</text>
+    <text class="p" x="16" y="152">cancela.</text></g>
+  <path class="a" d="M202 150 H232" marker-end="url(#ar)"/>
+  <path class="a" d="M426 150 H456" marker-end="url(#ar)"/><text class="lbl" x="432" y="140">no</text>
+  <path class="a" d="M331 196 V248" marker-end="url(#ar)"/><text class="lbl" x="340" y="228">sí</text>
+  <path class="a" d="M567 196 V248" marker-end="url(#ar)"/>
+  <path class="a" d="M674 150 H708" marker-end="url(#ar)"/>
+  <path class="a" d="M674 308 H837 V264" marker-end="url(#ar)"/>
+  <path class="a" d="M962 176 H992" marker-end="url(#ar)"/>
+  <text class="p" x="712" y="300">vigilante de pestañas</text>
+</svg>

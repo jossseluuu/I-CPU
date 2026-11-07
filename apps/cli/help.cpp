@@ -73,8 +73,9 @@ constexpr CommandHelp kCommands[] = {
     {"analyze",
      "icpu analyze <imagen> [--cover ORIGINAL] [--export DIR] [--steps N] [--json]\n"
      "\n"
-     "  Estegoanalisis: chi-cuadrado y su barrido, analisis RS (imagenes sin perdida) o\n"
-     "  chi-cuadrado DCT (JPEG). Con --cover compara con la original (MSE, PSNR, SSIM).\n"
+     "  Estegoanalisis: chi-cuadrado y su barrido (acumulado y por ventanas), analisis RS\n"
+     "  (imagenes sin perdida) o chi-cuadrado DCT (JPEG). Con --cover compara con la\n"
+     "  original (MSE, PSNR, SSIM).\n"
      "\n"
      "  Opciones:\n"
      "    --cover ORIGINAL        la portadora sin mensaje, para medir la distorsion\n"
@@ -101,6 +102,12 @@ constexpr CommandHelp kCommands[] = {
      "\n"
      "  Ejemplo:\n"
      "    icpu bench foto.png --bits 1,2,3 --csv resultados.csv\n"},
+    {"guided",
+     "icpu guided          (o simplemente: icpu, sin argumentos)\n"
+     "\n"
+     "  Modo guiado: un menu que pregunta paso a paso que hacer (ocultar, extraer o ver la\n"
+     "  capacidad de una imagen). Puedes arrastrar las imagenes a la consola para escribir\n"
+     "  su ruta. Usa siempre el modo adaptativo y pide la contrasena sin mostrarla.\n"},
     {"formats", "icpu formats\n\n  Tabla de formatos soportados.\n"},
     {"version", "icpu version\n\n  Version del programa.\n"},
 };

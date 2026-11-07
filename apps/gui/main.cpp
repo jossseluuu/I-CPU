@@ -32,7 +32,11 @@ int main(int argc, char** argv) {
             config.port = static_cast<int>(p);
         } else if (a == "-h" || a == "--help") {
             std::cout << "Uso: icpu-gui [--port N] [--no-browser]\n"
-                         "  Abre la interfaz grafica de I-CPU en el navegador (servidor local en 127.0.0.1).\n";
+                         "  Abre la interfaz grafica de I-CPU en el navegador (servidor local en 127.0.0.1).\n\n"
+                         "  --port N       puerto fijo (por defecto, uno libre que elige el sistema)\n"
+                         "  --no-browser   no abre el navegador; usa el enlace que se muestra\n\n"
+                         "  Se cierra con el boton de apagado de la web, con Ctrl+C o al cerrar todas\n"
+                         "  sus pestanas. En Windows, si ya hay una abierta, abre otra pestana de esa.\n";
             return 0;
         } else {
             std::cerr << "Opcion desconocida: " << a << " (usa --help)\n";

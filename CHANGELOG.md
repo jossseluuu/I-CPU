@@ -3,7 +3,7 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 Versiones según [Versionado Semántico](https://semver.org/lang/es/).
 
-## [2.0.0] - 2026-10-31
+## [2.0.0] - 2026-11-07
 
 Versión centrada en la indetectabilidad: nuevo formato v3, inserción adaptativa por defecto y
 corrección de los fallos encontrados en una revisión de la 1.5.
@@ -11,8 +11,8 @@ corrección de los fallos encontrados en una revisión de la 1.5.
 ### Añadido
 
 - **Modo adaptativo** (`--mode adaptive`, por defecto): Syndrome-Trellis Codes con costes HILL
-  (espacial), UERD (JPEG) y distancia de color (GIF). Ver [ADR 0008](docs/adr/0008-stc-adaptativo-por-defecto.md).
-- **Formato v3** con sal aleatoria guardada en la imagen. Ver [ADR 0007](docs/adr/0007-formato-v3-sal-almacenada.md).
+  (espacial), UERD (JPEG) y distancia de color (GIF). Ver [D8](docs/tecnico/decisiones-de-diseno.md#d8-inserción-adaptativa-con-stc-por-defecto).
+- **Formato v3** con sal aleatoria guardada en la imagen. Ver [D7](docs/tecnico/decisiones-de-diseno.md#d7-formato-v3-sal-aleatoria-guardada-en-la-imagen).
 - La sal y la cabecera también van con STC, en todos los modos, para no dejar cambios aislados en
   zonas lisas.
 - Aviso si la imagen es casi toda lisa, como una captura de pantalla, o si un PNG animado va a
@@ -21,6 +21,22 @@ corrección de los fallos encontrados en una revisión de la 1.5.
 - Imágenes de referencia reales de cada formato (`tests/golden`), pruebas con ficheros mutados,
   objetivo de fuzzing (`fuzz/`) y trabajos de CI con ASan, UBSan y libFuzzer.
 - Control Flow Guard en los ejecutables de Windows.
+- **Barrido chi-cuadrado por ventanas**, además del acumulado: localiza una inserción secuencial
+  aunque no empiece en el primer píxel. En la CLI, la GUI, el JSON (`window_p`) y el CSV exportado.
+  Ver [D9](docs/tecnico/decisiones-de-diseno.md#d9-barrido-chi-cuadrado-acumulado-y-por-ventanas).
+- **Ciclo de vida de la GUI**: el servidor se cierra también con Ctrl+C, al cerrar la consola o
+  cuando no queda ninguna pestaña abierta; no espera más de 2 s a una operación en curso (la
+  cancela); en Windows solo hay una instancia, y abrirla de nuevo abre otra pestaña de la existente.
+  Nueva ruta `POST /api/presence`.
+- GUI: diálogo de confirmación del apagado (avisa si hay una operación en marcha), pantalla de
+  cierre cuando el servidor desaparece y diálogo *Acerca de* con el significado del nombre
+  (*Image Covert Processing Unit*). Logo pulido.
+- `icpu help guided`.
+- **Documentación completa** en `docs/`: guías por perfil de usuario (instalación, primeros pasos,
+  GUI, CLI, buenas prácticas, experimentos), documentación técnica (arquitectura, esteganografía,
+  criptografía, formato v3, estegoanálisis, API HTTP, biblioteca, pruebas, decisiones de diseño),
+  glosario, preguntas frecuentes, diagramas SVG con tema claro y oscuro, capturas y resultados.
+  `CONTRIBUTING.md` y `scripts/generar_figuras.mjs`, que regenera figuras y capturas con datos reales.
 
 ### Cambiado
 
@@ -31,6 +47,11 @@ corrección de los fallos encontrados en una revisión de la 1.5.
 - Las contraseñas se normalizan a Unicode NFC en Windows y en la GUI.
 - Una contraseña incorrecta tarda el doble, porque se prueban las sales nueva y antigua.
 - JPEG necesita al menos 368 bloques, unos 130×130 px en 4:2:0, para la sal y la cabecera.
+- El CSV `barrido_chi2.csv` de `analyze --export` tiene las columnas `fraccion,p_acumulado,p_ventana`
+  (antes `fraccion,p`).
+- El registro de decisiones `docs/adr/` se integra en
+  [docs/tecnico/decisiones-de-diseno.md](docs/tecnico/decisiones-de-diseno.md) y `docs/arquitectura.md`
+  pasa a [docs/tecnico/arquitectura.md](docs/tecnico/arquitectura.md).
 
 ### Corregido
 
@@ -50,6 +71,12 @@ corrección de los fallos encontrados en una revisión de la 1.5.
   historial en el navegador.
 - Se aceptan ficheros de contraseña con BOM.
 - El README prometía que no se podía demostrar que el mensaje existe; ahora explica el alcance real.
+- **El botón de apagado de la GUI no cerraba nada:** el navegador enviaba un formulario vacío,
+  cpp-httplib lo rechazaba con un 400 y la web, que ignoraba el error, mostraba «cerrado» con el
+  servidor en marcha. Ahora se comprueba la respuesta y, si falla, se muestra el error.
+- La demo secuencial ya no se detectaba con el barrido chi-cuadrado acumulado (la cabecera v3, casi
+  intacta, ocupa las primeras filas), y la documentación decía lo contrario. Ver el barrido por ventanas.
+- `icpu info` solo mostraba la capacidad en modo adaptativo con `--json`; ahora también en texto.
 
 ## [1.5.0] - 2026-10-30
 
@@ -59,7 +86,7 @@ Interfaz web rediseñada, formato oculto v2 con la cabecera cifrada y una CLI m�
 
 - **Formato v2**: la cabecera (versión, parámetros y longitud) va cifrada con XChaCha20 y una
   clave propia. En la imagen ya no queda nada reconocible, ni con orden secuencial
-  ([ADR 0006](docs/adr/0006-formato-v2-cabecera-cifrada.md)).
+  ([D6](docs/tecnico/decisiones-de-diseno.md#d6-formato-v2-cabecera-cifrada-sustituida)).
 - **Interfaz web nueva**, minimalista, con tema claro, oscuro o automático y 100 % offline:
   - comparador antes/después con deslizador, vista de diferencias ×64 y **lupa de píxeles**
     que muestra coordenadas y color;
@@ -111,12 +138,13 @@ Primera versión publicada.
   ejecutable, con pestañas Ocultar, Extraer, Analizar y Experimento.
 - 38 casos de prueba (doctest), con imágenes generadas en código.
 - Scripts de compilación con MSVC, generación de muestras y experimentos; imágenes de demostración.
-- Documentación: README, arquitectura y registro de decisiones (ADR 0001–0005).
+- Documentación: README, arquitectura y registro de decisiones (ADR 0001–0005, hoy en
+  [decisiones de diseño](docs/tecnico/decisiones-de-diseno.md)).
 
 ### Limitaciones conocidas
 
 - La cabecera del contenedor (versión, parámetros y longitud) no está cifrada; solo la protege
-  que sus posiciones son secretas. Ver [docs/arquitectura.md](docs/arquitectura.md#8-limitaciones-conocidas).
+  que sus posiciones son secretas. Ver [limitaciones](docs/tecnico/arquitectura.md#8-limitaciones-conocidas).
 
 [2.0.0]: https://github.com/jossseluuu/I-CPU/compare/v1.5.0...v2.0.0
 [1.5.0]: https://github.com/jossseluuu/I-CPU/compare/v1.0.0...v1.5.0

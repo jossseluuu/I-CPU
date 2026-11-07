@@ -34,7 +34,7 @@ dos semanas y publicar la corrección con una nota en el [CHANGELOG](CHANGELOG.m
 - Acceso a la API de `icpu-gui` desde otra web o desde otro equipo de la red.
 
 Están documentadas y **no** se consideran vulnerabilidades nuevas (ver
-[limitaciones conocidas](docs/arquitectura.md#8-limitaciones-conocidas)):
+[limitaciones conocidas](docs/tecnico/arquitectura.md#8-limitaciones-conocidas)):
 - las debilidades de los formatos v1 y v2, que la 2.0 solo lee: vuelve a ocultar esos mensajes;
 - la detectabilidad de `--mode replace`, `--mode match` y el orden secuencial, pensados para experimentos;
 - la detección mediante estegoanálisis moderno (SRM, redes neuronales);

@@ -83,9 +83,9 @@ int cmd_analyze(const std::vector<std::string>& tokens) {
         if (sweep) {
             const auto p = dir / "barrido_chi2.csv";
             std::ofstream out(p, std::ios::binary);
-            out << "fraccion,p\n";
+            out << "fraccion,p_acumulado,p_ventana\n";
             for (std::size_t i = 0; i < sweep->fraction.size(); ++i)
-                out << sweep->fraction[i] << "," << sweep->p_value[i] << "\n";
+                out << sweep->fraction[i] << "," << sweep->p_value[i] << "," << sweep->window_p[i] << "\n";
             require(bool(out), ErrorCode::Io, "No se pudo escribir el barrido chi-cuadrado");
             exported.push_back(path_utf8(p));
         }
@@ -108,7 +108,11 @@ int cmd_analyze(const std::vector<std::string>& tokens) {
         if (sweep) {
             w.key("chi_square_sweep").begin_array();
             for (std::size_t i = 0; i < sweep->fraction.size(); ++i)
-                w.begin_object().field("fraction", sweep->fraction[i]).field("p", sweep->p_value[i]).end_object();
+                w.begin_object()
+                    .field("fraction", sweep->fraction[i])
+                    .field("p", sweep->p_value[i])
+                    .field("window_p", sweep->window_p[i])
+                    .end_object();
             w.end_array();
         }
         if (rs)
@@ -157,12 +161,16 @@ int cmd_analyze(const std::vector<std::string>& tokens) {
         std::cout << line;
     }
     if (sweep) {
-        std::cout << "  Barrido chi-cuadrado (p por porcion analizada):\n    ";
-        for (std::size_t i = 0; i < sweep->fraction.size(); ++i) {
-            std::snprintf(line, sizeof line, "%3.0f%%:%.2f ", sweep->fraction[i] * 100, sweep->p_value[i]);
-            std::cout << line << ((i + 1) % 8 == 0 && i + 1 < sweep->fraction.size() ? "\n    " : "");
-        }
-        std::cout << "\n";
+        auto print_sweep = [&](const char* title, const std::vector<double>& values) {
+            std::cout << title << "\n    ";
+            for (std::size_t i = 0; i < sweep->fraction.size(); ++i) {
+                std::snprintf(line, sizeof line, "%3.0f%%:%.2f ", sweep->fraction[i] * 100, values[i]);
+                std::cout << line << ((i + 1) % 8 == 0 && i + 1 < sweep->fraction.size() ? "\n    " : "");
+            }
+            std::cout << "\n";
+        };
+        print_sweep("  Barrido chi-cuadrado acumulado (p desde el principio hasta cada porcion):", sweep->p_value);
+        print_sweep("  Barrido chi-cuadrado por ventanas (p de cada porcion por separado):", sweep->window_p);
     }
     if (dct) {
         std::snprintf(line, sizeof line, "  Chi-cuadrado DCT (JSteg): p = %.4f  -> %s\n", dct->p_value,

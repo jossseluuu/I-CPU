@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600" role="img" aria-label="Formato v3: sal en ranuras públicas, cabecera cifrada en ranuras reservadas y cuerpo cifrado">
+  <style>
+    .bg { fill: #ffffff; stroke: #e6e7eb; }
+    .t { font: 700 20px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .st { font: 400 13.5px 'Segoe UI', Inter, system-ui, sans-serif; fill: #6b7180; }
+    .h { font: 700 14px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .p { font: 400 12px 'Segoe UI', Inter, system-ui, sans-serif; fill: #3c4049; }
+    .m { font: 500 11.5px ui-monospace, 'Cascadia Mono', Consolas, monospace; fill: #3c4049; }
+    .mw { font: 600 12px ui-monospace, 'Cascadia Mono', Consolas, monospace; fill: #ffffff; }
+    .cell { fill: #eceef2; } .salt { fill: #f59e0b; } .hdr { fill: #8b5cf6; } .body { fill: #4f46e5; }
+    .card { fill: #f7f7f8; stroke: #e6e7eb; }
+    .br { stroke: #9aa0ab; stroke-width: 1.4; fill: none; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #15181e; stroke: #262b35; } .card { fill: #1c2028; stroke: #2c323d; } .cell { fill: #262b35; }
+      .t, .h { fill: #eceef2; } .st { fill: #8f97a6; } .p, .m { fill: #c7cbd3; }
+    }
+  </style>
+  <rect class="bg" x=".5" y=".5" width="1199" height="599" rx="16"/>
+  <text class="t" x="32" y="46">Formato v3: qué se guarda y dónde</text>
+  <text class="st" x="32" y="70">Las ranuras de la imagen (muestras de color, coeficientes DCT o píxeles de paleta) vistas como una tira. Tres zonas, todas escritas con STC.</text>
+
+  <!-- Tira de ranuras: 60 celdas -->
+  <g transform="translate(32 96)">
+    <rect class="cell" x="0" width="16" height="34" rx="3"/><rect class="salt" x="19" width="16" height="34" rx="3"/><rect class="cell" x="38" width="16" height="34" rx="3"/><rect class="hdr" x="57" width="16" height="34" rx="3"/><rect class="body" x="76" width="16" height="34" rx="3"/><rect class="cell" x="95" width="16" height="34" rx="3"/><rect class="body" x="114" width="16" height="34" rx="3"/><rect class="cell" x="133" width="16" height="34" rx="3"/><rect class="salt" x="152" width="16" height="34" rx="3"/><rect class="hdr" x="171" width="16" height="34" rx="3"/>
+    <rect class="cell" x="190" width="16" height="34" rx="3"/><rect class="body" x="209" width="16" height="34" rx="3"/><rect class="cell" x="228" width="16" height="34" rx="3"/><rect class="cell" x="247" width="16" height="34" rx="3"/><rect class="hdr" x="266" width="16" height="34" rx="3"/><rect class="body" x="285" width="16" height="34" rx="3"/><rect class="cell" x="304" width="16" height="34" rx="3"/><rect class="salt" x="323" width="16" height="34" rx="3"/><rect class="body" x="342" width="16" height="34" rx="3"/><rect class="cell" x="361" width="16" height="34" rx="3"/>
+    <rect class="body" x="380" width="16" height="34" rx="3"/><rect class="cell" x="399" width="16" height="34" rx="3"/><rect class="hdr" x="418" width="16" height="34" rx="3"/><rect class="cell" x="437" width="16" height="34" rx="3"/><rect class="body" x="456" width="16" height="34" rx="3"/><rect class="cell" x="475" width="16" height="34" rx="3"/><rect class="cell" x="494" width="16" height="34" rx="3"/><rect class="body" x="513" width="16" height="34" rx="3"/><rect class="salt" x="532" width="16" height="34" rx="3"/><rect class="cell" x="551" width="16" height="34" rx="3"/>
+    <rect class="hdr" x="570" width="16" height="34" rx="3"/><rect class="body" x="589" width="16" height="34" rx="3"/><rect class="cell" x="608" width="16" height="34" rx="3"/><rect class="cell" x="627" width="16" height="34" rx="3"/><rect class="body" x="646" width="16" height="34" rx="3"/><rect class="cell" x="665" width="16" height="34" rx="3"/><rect class="salt" x="684" width="16" height="34" rx="3"/><rect class="body" x="703" width="16" height="34" rx="3"/><rect class="cell" x="722" width="16" height="34" rx="3"/><rect class="hdr" x="741" width="16" height="34" rx="3"/>
+    <rect class="cell" x="760" width="16" height="34" rx="3"/><rect class="body" x="779" width="16" height="34" rx="3"/><rect class="cell" x="798" width="16" height="34" rx="3"/><rect class="body" x="817" width="16" height="34" rx="3"/><rect class="cell" x="836" width="16" height="34" rx="3"/><rect class="salt" x="855" width="16" height="34" rx="3"/><rect class="cell" x="874" width="16" height="34" rx="3"/><rect class="body" x="893" width="16" height="34" rx="3"/><rect class="hdr" x="912" width="16" height="34" rx="3"/><rect class="cell" x="931" width="16" height="34" rx="3"/>
+    <rect class="body" x="950" width="16" height="34" rx="3"/><rect class="cell" x="969" width="16" height="34" rx="3"/><rect class="cell" x="988" width="16" height="34" rx="3"/><rect class="body" x="1007" width="16" height="34" rx="3"/><rect class="salt" x="1026" width="16" height="34" rx="3"/><rect class="cell" x="1045" width="16" height="34" rx="3"/><rect class="body" x="1064" width="16" height="34" rx="3"/><rect class="hdr" x="1083" width="16" height="34" rx="3"/><rect class="cell" x="1102" width="16" height="34" rx="3"/><rect class="body" x="1121" width="16" height="34" rx="3"/>
+  </g>
+  <g transform="translate(32 150)">
+    <rect class="salt" width="14" height="14" rx="3"/><text class="p" x="22" y="12">sal</text>
+    <rect class="hdr" x="70" width="14" height="14" rx="3"/><text class="p" x="92" y="12">cabecera</text>
+    <rect class="body" x="170" width="14" height="14" rx="3"/><text class="p" x="192" y="12">cuerpo</text>
+    <rect class="cell" x="258" width="14" height="14" rx="3"/><text class="p" x="280" y="12">sin usar (o sin cambiar: STC solo modifica una parte de las ranuras que usa)</text>
+  </g>
+
+  <!-- Tres zonas -->
+  <g transform="translate(32 190)">
+    <rect class="card" width="360" height="236" rx="14"/>
+    <rect class="salt" x="16" y="16" width="10" height="26" rx="3"/><text class="h" x="36" y="34">1 · Sal (16 bytes)</text>
+    <text class="p" x="16" y="66">En W·128 ranuras <tspan font-weight="700">públicas</tspan>: una permutación</text>
+    <text class="p" x="16" y="84">que solo depende del dominio y del tamaño.</text>
+    <text class="p" x="16" y="108">Tiene que leerse antes de tener ninguna clave,</text>
+    <text class="p" x="16" y="126">así que no puede estar en un lugar secreto.</text>
+    <text class="p" x="16" y="150">No delata nada: cualquier imagen «tiene» una</text>
+    <text class="p" x="16" y="168">(el síndrome de sus bits bajos) aunque nadie</text>
+    <text class="p" x="16" y="186">la haya escrito, y en una foto parece ruido.</text>
+    <text class="m" x="16" y="216">W = 1…64, sale de reserved_count()</text>
+  </g>
+  <g transform="translate(420 190)">
+    <rect class="card" width="360" height="236" rx="14"/>
+    <rect class="hdr" x="16" y="16" width="10" height="26" rx="3"/><text class="h" x="36" y="34">2 · Cabecera (30 bytes)</text>
+    <text class="p" x="16" y="66">En las primeras W·240 ranuras reservadas</text>
+    <text class="p" x="16" y="84">del orden secreto (clave de posiciones).</text>
+    <g transform="translate(16 102)">
+      <rect class="hdr" width="210" height="30" rx="6" opacity=".9"/><text class="mw" x="105" y="20" text-anchor="middle">nonce · 24 B</text>
+      <rect class="hdr" x="214" width="114" height="30" rx="6" opacity=".6"/><text class="mw" x="271" y="20" text-anchor="middle">E(…) · 6 B</text>
+    </g>
+    <text class="p" x="16" y="160">E = XChaCha20 con la clave de cabecera:</text>
+    <text class="m" x="16" y="180">versión 3 · parámetros · longitud</text>
+    <text class="p" x="16" y="206">Ningún byte es reconocible sin la contraseña.</text>
+  </g>
+  <g transform="translate(808 190)">
+    <rect class="card" width="360" height="236" rx="14"/>
+    <rect class="body" x="16" y="16" width="10" height="26" rx="3"/><text class="h" x="36" y="34">3 · Cuerpo</text>
+    <text class="p" x="16" y="66">En el resto del orden secreto: con STC</text>
+    <text class="p" x="16" y="84">(adaptativo) o k bits por ranura.</text>
+    <g transform="translate(16 102)">
+      <rect class="body" width="246" height="30" rx="6" opacity=".9"/><text class="mw" x="123" y="20" text-anchor="middle">carga útil cifrada</text>
+      <rect class="body" x="250" width="78" height="30" rx="6" opacity=".6"/><text class="mw" x="289" y="20" text-anchor="middle">MAC 16 B</text>
+    </g>
+    <text class="p" x="16" y="160">El MAC (Poly1305) cubre también la cabecera</text>
+    <text class="p" x="16" y="178">como datos asociados: si cambia un solo bit,</text>
+    <text class="p" x="16" y="196">en cualquier zona, la extracción falla.</text>
+  </g>
+
+  <!-- Derivacion -->
+  <g transform="translate(32 446)">
+    <rect class="card" width="1136" height="126" rx="14"/>
+    <text class="h" x="16" y="30">Derivación de claves</text>
+    <text class="m" x="16" y="58">sal_argon  = BLAKE2b("icpu/v3/salt/" ‖ dominio ‖ N ‖ sal)</text>
+    <text class="m" x="16" y="80">maestra    = Argon2id(contraseña, sal_argon, 64 MiB, 3 pasadas)</text>
+    <text class="m" x="620" y="58">cifrado    = BLAKE2b(maestra, "icpu/v1/encryption")</text>
+    <text class="m" x="620" y="80">posiciones = BLAKE2b(maestra, "icpu/v1/placement")</text>
+    <text class="m" x="620" y="102">cabecera   = BLAKE2b(maestra, "icpu/v2/header")</text>
+    <text class="p" x="16" y="108">Sal nueva en cada inserción → claves y posiciones nuevas, aunque se repitan imagen y contraseña.</text>
+  </g>
+</svg>

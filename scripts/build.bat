@@ -11,7 +11,7 @@ rem
 rem  Por que MSVC: Smart App Control de Windows bloquea binarios sin firma
 rem  reconocida (p. ej. as.exe/ld.exe de muchas distribuciones de MinGW).
 rem  MSVC, y el CMake y Ninja que incluye Visual Studio, estan firmados por
-rem  Microsoft. Ver docs\adr\0001-compilar-con-msvc.md
+rem  Microsoft. Ver docs\tecnico\decisiones-de-diseno.md (D1)
 rem ===========================================================================
 setlocal
 rem Antes de "shift": shift tambien desplaza %0 y %~dp0 dejaria de ser esta carpeta

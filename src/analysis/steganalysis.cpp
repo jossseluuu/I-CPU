@@ -38,13 +38,18 @@ double gamma_p(double a, double x) {
     return 1.0 - std::exp(-x + a * std::log(x) - gln) * h;
 }
 
-std::vector<std::uint64_t> color_histogram(const image::Raster& r, std::size_t max_pixels) {
+// Histograma de las muestras de color de los pixeles [first, last).
+std::vector<std::uint64_t> color_histogram(const image::Raster& r, std::size_t first, std::size_t last) {
     std::vector<std::uint64_t> h(r.depth == 16 ? 65536 : 256, 0);
     const unsigned cc = r.color_channels();
-    const std::size_t n = std::min(max_pixels, r.pixel_count());
-    for (std::size_t p = 0; p < n; ++p)
+    last = std::min(last, r.pixel_count());
+    for (std::size_t p = first; p < last; ++p)
         for (unsigned c = 0; c < cc; ++c) ++h[r.at(p, c)];
     return h;
+}
+
+std::vector<std::uint64_t> color_histogram(const image::Raster& r, std::size_t max_pixels) {
+    return color_histogram(r, 0, max_pixels);
 }
 
 // Grupos de 4 muestras horizontales y mascara [0 1 1 0].
@@ -119,11 +124,14 @@ ChiSquareResult chi_square_image(const image::Raster& raster) {
 
 ChiSquareSweep chi_square_sweep(const image::Raster& raster, unsigned steps) {
     ChiSquareSweep s;
+    std::size_t previous = 0;
     for (unsigned i = 1; i <= steps; ++i) {
         const double frac = double(i) / steps;
         const auto n = static_cast<std::size_t>(frac * double(raster.pixel_count()));
         s.fraction.push_back(frac);
-        s.p_value.push_back(chi_square_pairs(color_histogram(raster, n)).p_value);
+        s.p_value.push_back(chi_square_pairs(color_histogram(raster, 0, n)).p_value);
+        s.window_p.push_back(chi_square_pairs(color_histogram(raster, previous, n)).p_value);
+        previous = n;
     }
     return s;
 }

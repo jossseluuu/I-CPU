@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 470" width="1200" height="470" role="img" aria-label="Los tres dominios de ocultación: espacial, DCT y paleta">
+  <style>
+    .bg { fill: #ffffff; stroke: #e6e7eb; }
+    .t { font: 700 20px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .st { font: 400 13.5px 'Segoe UI', Inter, system-ui, sans-serif; fill: #6b7180; }
+    .card { fill: #f7f7f8; stroke: #e6e7eb; }
+    .h { font: 700 15px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .tag { font: 700 11px 'Segoe UI', Inter, system-ui, sans-serif; fill: #4f46e5; letter-spacing: 1px; }
+    .p { font: 400 12px 'Segoe UI', Inter, system-ui, sans-serif; fill: #3c4049; }
+    .m { font: 600 15px ui-monospace, 'Cascadia Mono', Consolas, monospace; fill: #3c4049; }
+    .ms { font: 600 11px ui-monospace, 'Cascadia Mono', Consolas, monospace; fill: #3c4049; }
+    .lsb { fill: #4f46e5; }
+    .cellc { fill: #ffffff; stroke: #d4d6dc; } .dc { fill: #e5e7eb; } .zero { fill: #f3f4f6; } .use { fill: #e0e7ff; stroke: #a5b4fc; } .chg { fill: #4f46e5; }
+    .chgt { font: 700 11px ui-monospace, Consolas, monospace; fill: #ffffff; }
+    .a { stroke: #9aa0ab; stroke-width: 1.6; fill: none; } .ah { fill: #9aa0ab; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #15181e; stroke: #262b35; } .card { fill: #1c2028; stroke: #2c323d; }
+      .t, .h { fill: #eceef2; } .st { fill: #8f97a6; } .p, .m, .ms { fill: #c7cbd3; } .tag, .lsb { fill: #a5a8ff; }
+      .cellc { fill: #15181e; stroke: #343a46; } .dc { fill: #2c323d; } .zero { fill: #20242c; } .use { fill: #20223a; stroke: #3b3e6b; } .chg { fill: #6366f1; }
+    }
+  </style>
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+  <rect class="bg" x=".5" y=".5" width="1199" height="469" rx="16"/>
+  <text class="t" x="32" y="46">Tres dominios de ocultación</text>
+  <text class="st" x="32" y="70">El formato de la imagen de salida decide dónde se esconden los bits. En los tres, cada «ranura» guarda un bit en su paridad.</text>
+
+  <!-- Espacial -->
+  <g transform="translate(32 92)">
+    <rect class="card" width="364" height="348" rx="14"/>
+    <text class="tag" x="18" y="30">PNG · BMP · TGA · QOI · PNM</text>
+    <text class="h" x="18" y="54">Espacial: los píxeles</text>
+    <g transform="translate(18 76)">
+      <rect width="56" height="56" rx="8" fill="#9a6b3a"/><rect x="62" width="56" height="56" rx="8" fill="#9a6c3a"/>
+      <text class="p" x="0" y="76">antes</text><text class="p" x="62" y="76">después</text>
+    </g>
+    <text class="ms" x="160" y="90">R  154 = 1001101<tspan class="lsb">0</tspan></text>
+    <text class="ms" x="160" y="110">G  107 = 0110101<tspan class="lsb">1</tspan></text>
+    <text class="ms" x="160" y="130">B   58 = 0011101<tspan class="lsb">0</tspan></text>
+    <text class="ms" x="160" y="152">G → 108 = 0110110<tspan class="lsb">0</tspan></text>
+    <text class="p" x="18" y="190">Cada muestra de color R, G o B (nunca el canal</text>
+    <text class="p" x="18" y="208">alfa) es una ranura. Cambiar ±1 modifica el bit</text>
+    <text class="p" x="18" y="226">menos significativo: imposible de ver.</text>
+    <text class="p" x="18" y="256">Costes HILL: un filtro de altas frecuencias mide</text>
+    <text class="p" x="18" y="274">la textura. Caro en el cielo, barato en la hierba.</text>
+    <text class="p" x="18" y="304"><tspan font-weight="700">Capacidad:</tspan> la mayor. Con 480 × 320 px,</text>
+    <text class="p" x="18" y="322">13,3 KiB adaptativo · hasta 213 KiB con replace k = 4.</text>
+  </g>
+
+  <!-- DCT -->
+  <g transform="translate(418 92)">
+    <rect class="card" width="364" height="348" rx="14"/>
+    <text class="tag" x="18" y="30">JPEG</text>
+    <text class="h" x="18" y="54">Frecuencial: coeficientes DCT</text>
+    <g transform="translate(18 70)">
+      <rect class="dc" x="0" y="0" width="17" height="17" rx="2"/><rect class="use" x="18" y="0" width="17" height="17" rx="2"/><rect class="use" x="36" y="0" width="17" height="17" rx="2"/><rect class="zero" x="54" y="0" width="17" height="17" rx="2"/><rect class="zero" x="72" y="0" width="17" height="17" rx="2"/><rect class="zero" x="90" y="0" width="17" height="17" rx="2"/><rect class="zero" x="108" y="0" width="17" height="17" rx="2"/><rect class="zero" x="126" y="0" width="17" height="17" rx="2"/>
+      <rect class="use" x="0" y="18" width="17" height="17" rx="2"/><rect class="chg" x="18" y="18" width="17" height="17" rx="2"/><rect class="zero" x="36" y="18" width="17" height="17" rx="2"/><rect class="use" x="54" y="18" width="17" height="17" rx="2"/><rect class="zero" x="72" y="18" width="17" height="17" rx="2"/><rect class="zero" x="90" y="18" width="17" height="17" rx="2"/><rect class="zero" x="108" y="18" width="17" height="17" rx="2"/><rect class="zero" x="126" y="18" width="17" height="17" rx="2"/>
+      <rect class="use" x="0" y="36" width="17" height="17" rx="2"/><rect class="zero" x="18" y="36" width="17" height="17" rx="2"/><rect class="use" x="36" y="36" width="17" height="17" rx="2"/><rect class="zero" x="54" y="36" width="17" height="17" rx="2"/><rect class="zero" x="72" y="36" width="17" height="17" rx="2"/><rect class="zero" x="90" y="36" width="17" height="17" rx="2"/><rect class="zero" x="108" y="36" width="17" height="17" rx="2"/><rect class="zero" x="126" y="36" width="17" height="17" rx="2"/>
+      <rect class="zero" x="0" y="54" width="17" height="17" rx="2"/><rect class="use" x="18" y="54" width="17" height="17" rx="2"/><rect class="zero" x="36" y="54" width="17" height="17" rx="2"/><rect class="zero" x="54" y="54" width="17" height="17" rx="2"/><rect class="zero" x="72" y="54" width="17" height="17" rx="2"/><rect class="zero" x="90" y="54" width="17" height="17" rx="2"/><rect class="zero" x="108" y="54" width="17" height="17" rx="2"/><rect class="zero" x="126" y="54" width="17" height="17" rx="2"/>
+      <rect class="zero" x="0" y="72" width="143" height="17" rx="2"/>
+      <rect class="zero" x="0" y="90" width="143" height="17" rx="2"/>
+      <rect class="zero" x="0" y="108" width="143" height="17" rx="2"/>
+      <rect class="zero" x="0" y="126" width="143" height="17" rx="2"/>
+    </g>
+    <g transform="translate(176 72)">
+      <rect class="dc" width="14" height="14" rx="2"/><text class="p" x="20" y="11">DC: solo sal y cabecera</text>
+      <rect class="use" y="22" width="14" height="14" rx="2"/><text class="p" x="20" y="33">AC distinto de 0: ranura</text>
+      <rect class="zero" y="44" width="14" height="14" rx="2"/><text class="p" x="20" y="55">ceros: coste infinito</text>
+      <rect class="chg" y="66" width="14" height="14" rx="2"/><text class="p" x="20" y="77">cambiado: 3 → 2</text>
+    </g>
+    <text class="p" x="18" y="236">Se leen los coeficientes cuantizados de cada bloque</text>
+    <text class="p" x="18" y="254">8 × 8 <tspan font-weight="700">sin recomprimir</tspan> la imagen (libjpeg-turbo).</text>
+    <text class="p" x="18" y="278">Costes UERD: según la energía del bloque y el</text>
+    <text class="p" x="18" y="296">paso de cuantización de cada frecuencia.</text>
+    <text class="p" x="18" y="322"><tspan font-weight="700">Capacidad:</tspan> pequeña (1,2 KiB en la demo).</text>
+  </g>
+
+  <!-- Paleta -->
+  <g transform="translate(804 92)">
+    <rect class="card" width="364" height="348" rx="14"/>
+    <text class="tag" x="18" y="30">GIF (también animados)</text>
+    <text class="h" x="18" y="54">Paleta: índices de color</text>
+    <g transform="translate(18 74)">
+      <rect width="30" height="30" rx="6" fill="#1e3a8a"/><rect x="34" width="30" height="30" rx="6" fill="#1f418f"/>
+      <rect x="76" width="30" height="30" rx="6" fill="#3f7d3a"/><rect x="110" width="30" height="30" rx="6" fill="#43843d"/>
+      <rect x="152" width="30" height="30" rx="6" fill="#d9a441"/><rect x="186" width="30" height="30" rx="6" fill="#dcab4a"/>
+      <rect x="228" width="30" height="30" rx="6" fill="#b44a3c"/><rect x="262" width="30" height="30" rx="6" fill="#ba5243"/>
+      <text class="ms" x="15" y="48" text-anchor="middle">2m</text><text class="ms" x="49" y="48" text-anchor="middle">2m+1</text>
+      <text class="ms" x="91" y="48" text-anchor="middle">0</text><text class="ms" x="125" y="48" text-anchor="middle">1</text>
+      <text class="ms" x="167" y="48" text-anchor="middle">0</text><text class="ms" x="201" y="48" text-anchor="middle">1</text>
+      <text class="ms" x="243" y="48" text-anchor="middle">0</text><text class="ms" x="277" y="48" text-anchor="middle">1</text>
+    </g>
+    <text class="p" x="18" y="150">La paleta se ordena encadenando cada color con</text>
+    <text class="p" x="18" y="168">el más parecido y se agrupa en pares (EzStego).</text>
+    <text class="p" x="18" y="192">Cada píxel es una ranura: para escribir un bit se</text>
+    <text class="p" x="18" y="210">cambia su índice al otro color del par.</text>
+    <text class="p" x="18" y="236">Coste: la distancia entre los dos colores. La</text>
+    <text class="p" x="18" y="254">transparencia y los pares incompletos no se tocan.</text>
+    <text class="p" x="18" y="278">Se conservan paletas, animación y extensiones.</text>
+    <text class="p" x="18" y="322"><tspan font-weight="700">Capacidad:</tspan> media (3,3 KiB en la demo).</text>
+  </g>
+</svg>

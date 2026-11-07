@@ -81,6 +81,24 @@ TEST_CASE("Chi-cuadrado y RS distinguen la sustitucion LSB") {
     CHECK(sweep.fraction.back() == doctest::Approx(1.0));
     CHECK(sweep.p_value[1] > 0.9);   // 20 %: dentro del mensaje
     CHECK(sweep.p_value[9] < sweep.p_value[1]);
+    REQUIRE(sweep.window_p.size() == 10);
+    for (int i = 0; i < 5; ++i) CHECK(sweep.window_p[std::size_t(i)] > 0.9);  // ventanas con mensaje
+    // (En una imagen sintetica pequena, una ventana limpia tambien puede dar p alto: con pocas
+    //  muestras el test discrimina poco. Por eso solo se comprueban las ventanas con mensaje.)
+
+    // Como en el formato v3: al principio, una zona que la insercion casi no toca (la cabecera,
+    // escrita con STC, en una zona lisa: pares de valores muy desiguales) y despues el mensaje.
+    // El acumulado deja de verlo; las ventanas lo encuentran.
+    Raster late = cover;
+    const std::size_t from = late.samples.size() / 10, to = late.samples.size() / 2;
+    for (std::size_t i = 0; i < from; ++i) late.samples[i] &= ~std::uint16_t(1);  // zona lisa: solo valores pares
+    std::copy(replaced.samples.begin() + std::ptrdiff_t(from), replaced.samples.begin() + std::ptrdiff_t(to),
+              late.samples.begin() + std::ptrdiff_t(from));
+    const auto late_sweep = analysis::chi_square_sweep(late, 10);
+    CHECK(late_sweep.p_value[1] < 0.01);  // el acumulado no lo ve en ninguna porcion temprana
+    CHECK(late_sweep.p_value[4] < 0.01);
+    CHECK(late_sweep.window_p[0] < 0.01);
+    for (int i = 1; i < 5; ++i) CHECK(late_sweep.window_p[std::size_t(i)] > 0.9);  // las ventanas si
 }
 
 TEST_CASE("Chi-cuadrado DCT detecta JSteg (LSB de coeficientes AC)") {

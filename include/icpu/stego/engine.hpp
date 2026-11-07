@@ -21,7 +21,7 @@
 // - Claves = Argon2id(contrasena, sal) -> {cifrado, posicionamiento, cabecera}.
 //   Sus parametros son fijos: guardarlos revelaria un valor reconocible.
 //
-// v1 y v2 (solo lectura): ver src/stego/legacy.cpp y docs/adr/0007.
+// v1 y v2 (solo lectura): ver src/stego/legacy.cpp y docs/tecnico/formato.md.
 
 #include <array>
 #include <cstdint>

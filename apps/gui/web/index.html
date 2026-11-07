@@ -13,13 +13,13 @@
   <a class="skip" href="#main">Saltar al contenido</a>
 
   <header class="topbar">
-    <div class="brand">
-      <img src="/favicon.svg" alt="" width="28" height="28">
-      <div>
-        <div class="brand-name">I-CPU <span id="version" class="version"></span></div>
-        <div class="brand-sub">Esteganografía cifrada</div>
-      </div>
-    </div>
+    <button class="brand" id="about-btn" title="Acerca de I-CPU" aria-label="Acerca de I-CPU">
+      <img class="brand-logo" src="/favicon.svg" alt="" width="34" height="34">
+      <span class="brand-text">
+        <span class="brand-name">I-CPU <span id="version" class="version" hidden></span></span>
+        <span class="brand-sub">Esteganografía cifrada</span>
+      </span>
+    </button>
 
     <nav class="tabs" role="tablist" aria-label="Secciones">
       <button role="tab" id="tabbtn-embed" data-tab="embed" aria-selected="true" aria-controls="tab-embed">
@@ -316,6 +316,40 @@
     <button class="btn secondary wide" id="shortcuts-close">Entendido</button>
   </dialog>
 
+  <!-- Acerca de -->
+  <dialog id="about" class="dialog about" aria-labelledby="about-title">
+    <div class="about-head">
+      <img src="/favicon.svg" alt="" width="56" height="56">
+      <div>
+        <h2 id="about-title">I-CPU <span id="about-version" class="version-pill"></span></h2>
+        <p class="about-acronym"><b>I</b>mage <b>C</b>overt <b>P</b>rocessing <b>U</b>nit</p>
+      </div>
+    </div>
+    <p>Una «unidad de procesamiento encubierto de imágenes»: recibe una imagen y un mensaje,
+      los procesa y devuelve una imagen que parece la misma pero lleva el mensaje <b>cifrado</b>
+      y repartido entre sus píxeles, coeficientes DCT o colores de paleta.</p>
+    <ul class="about-facts">
+      <li><span data-icon="lock"></span>Argon2id + XChaCha20-Poly1305</li>
+      <li><span data-icon="sparkles"></span>Inserción adaptativa con Syndrome-Trellis Codes</li>
+      <li><span data-icon="chart"></span>Estegoanálisis y experimentos incluidos</li>
+      <li><span data-icon="monitor"></span>Todo en local: nada sale de este equipo</li>
+    </ul>
+    <p class="muted small">Proyecto personal de aprendizaje, con licencia MIT. Sin auditoría de seguridad independiente.</p>
+    <button class="btn secondary wide" id="about-close">Cerrar</button>
+  </dialog>
+
+  <!-- Confirmar apagado -->
+  <dialog id="shutdown-dialog" class="dialog" aria-labelledby="shutdown-title">
+    <h2 id="shutdown-title">¿Cerrar I-CPU?</h2>
+    <p>Se detendrá el servidor local, se cerrará la consola y, si el navegador lo permite, también esta pestaña.</p>
+    <p id="shutdown-busy" class="callout warn" hidden><span data-icon="alert"></span>
+      Hay una operación en curso: se cancelará y su resultado se perderá.</p>
+    <div class="dialog-actions">
+      <button class="btn secondary" id="shutdown-cancel">Cancelar</button>
+      <button class="btn danger" id="shutdown-confirm"><span data-icon="power"></span>Cerrar I-CPU</button>
+    </div>
+  </dialog>
+
   <!-- Arrastrar a cualquier parte -->
   <div id="drop-overlay" class="drop-overlay" hidden>
     <div><span data-icon="upload"></span><p id="drop-overlay-text">Suelta la imagen aquí</p></div>
@@ -324,9 +358,10 @@
   <div id="toasts" class="toasts" aria-live="polite"></div>
 
   <div id="closed" class="closed" hidden>
-    <img src="/favicon.svg" alt="" width="48" height="48">
+    <img src="/favicon.svg" alt="" width="56" height="56">
     <h1>I-CPU se ha cerrado</h1>
-    <p>Ya puedes cerrar esta pestaña.</p>
+    <p id="closed-reason">El servidor local se ha detenido.</p>
+    <p>Ya puedes cerrar esta pestaña. Para volver a usarlo, abre <code>icpu-gui</code>.</p>
   </div>
 </body>
 </html>

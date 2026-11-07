@@ -1,169 +1,221 @@
-# I-CPU
+<p align="center">
+  <img src="docs/img/marca/banner.svg" alt="I-CPU, Image Covert Processing Unit: esteganografía cifrada en imágenes" width="100%">
+</p>
 
-[![CI](https://github.com/jossseluuu/I-CPU/actions/workflows/ci.yml/badge.svg)](https://github.com/jossseluuu/I-CPU/actions/workflows/ci.yml)
-[![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE)
-![C++20](https://img.shields.io/badge/C%2B%2B-20-informational.svg)
-![Plataformas](https://img.shields.io/badge/plataformas-Windows%20%7C%20Linux-lightgrey.svg)
+<p align="center">
+  <a href="https://github.com/jossseluuu/I-CPU/actions/workflows/ci.yml"><img src="https://github.com/jossseluuu/I-CPU/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licencia-MIT-blue.svg" alt="Licencia: MIT"></a>
+  <img src="https://img.shields.io/badge/C%2B%2B-20-informational.svg" alt="C++20">
+  <img src="https://img.shields.io/badge/plataformas-Windows%20%7C%20Linux-lightgrey.svg" alt="Plataformas: Windows y Linux">
+  <img src="https://img.shields.io/badge/pruebas-68-success.svg" alt="68 pruebas">
+</p>
 
-Esteganografía **cifrada** en imágenes: oculta un texto o un fichero dentro de una imagen de
-forma que, sin la contraseña, no se puede leer, y procura que sea difícil detectar que está ahí.
-Ninguna herramienta puede garantizar lo segundo: ver [Qué protege y qué no](#qué-protege-y-qué-no).
+<p align="center">
+  <a href="docs/guias/primeros-pasos.md"><b>Primeros pasos</b></a> ·
+  <a href="docs/README.md"><b>Documentación</b></a> ·
+  <a href="docs/guias/perfiles.md">¿Para quién es?</a> ·
+  <a href="docs/tecnico/arquitectura.md">Cómo funciona</a> ·
+  <a href="docs/guias/experimentos.md">Experimentos</a>
+</p>
 
-- **Tres dominios de ocultación**, según el formato de salida:
-  - *espacial* (bits bajos de los píxeles): PNG, BMP, TGA, QOI, PNM
-  - *frecuencial* (coeficientes DCT): JPEG, sin recomprimir la imagen
-  - *paleta* (índices de color, estilo EzStego): GIF, incluidos los animados
-- **Inserción adaptativa** con Syndrome-Trellis Codes: cambia pocas muestras y en zonas con textura,
-  con una carga limitada a un nivel prudente ([ADR 0008](docs/adr/0008-stc-adaptativo-por-defecto.md)).
-- **Criptografía**: Argon2id (derivación de clave) + XChaCha20-Poly1305 (cifrado autenticado). Sal
-  aleatoria en cada inserción, posiciones que salen de la contraseña y cabecera cifrada
-  ([formato v3](docs/adr/0007-formato-v3-sal-almacenada.md)). Se siguen leyendo las imágenes v1 y v2.
-- **Estegoanálisis incluido** (chi-cuadrado, análisis RS, chi-cuadrado DCT) y métricas de
-  distorsión (PSNR, SSIM) para evaluar lo detectable que es cada configuración.
-- Dos interfaces: **CLI** (`icpu.exe`) y **GUI web local** (`icpu-gui.exe`, un solo ejecutable).
+**I-CPU** esconde un texto o un fichero **dentro de una imagen**: lo cifra con tu contraseña y lo
+reparte entre los píxeles, los coeficientes de un JPEG o los colores de un GIF, de forma que la
+imagen parece la misma. Sin la contraseña no se puede leer, y está diseñado para que tampoco sea
+fácil saber que hay algo. Todo en local, en un solo ejecutable, sin conexión a Internet.
 
-## Inicio rápido (Windows)
+<p align="center">
+  <img src="docs/img/experimentos/original-frente-a-resultado.png" alt="La imagen original y la que lleva 12 KB ocultos son idénticas a simple vista; solo la diferencia amplificada ×64 revela ruido en las zonas con textura" width="88%">
+</p>
 
-Requisito: [Build Tools para Visual Studio](https://visualstudio.microsoft.com/es/downloads/)
-con la carga de trabajo **"Desarrollo para el escritorio con C++"** (incluye compilador, CMake y Ninja).
+## Por qué «I-CPU»
+
+Empezó como un **procesador de imágenes**: un programa que interpreta una imagen pieza a pieza y
+puede reescribirla sin que cambie su aspecto. Hoy el nombre se lee como **Image Covert Processing
+Unit**, una unidad de procesamiento *encubierto* de imágenes. La luna del logo viene de su primer
+nombre, *Umbra* («sombra»). [La historia completa](docs/sobre-el-proyecto.md#por-qué-i-cpu).
+
+<p align="center"><img src="docs/img/marca/nombre.svg" alt="I-CPU: Image, Covert, Processing, Unit, y la evolución del proyecto" width="88%"></p>
+
+## Qué hace
+
+- 🔒 **Cifrado fuerte.** Argon2id (64 MiB) para la contraseña y XChaCha20-Poly1305 para el mensaje:
+  sin la contraseña no se lee, y cualquier modificación se detecta.
+- 🫥 **Inserción adaptativa.** Syndrome-Trellis Codes con costes HILL y UERD: cambia pocas muestras y
+  solo donde hay textura, con una carga prudente. Si el mensaje no cabe, lo dice en lugar de arriesgarse.
+- 🖼️ **Tres dominios.** Píxeles (PNG, BMP, TGA, QOI, PNM), coeficientes DCT (JPEG, sin recomprimir)
+  e índices de paleta (GIF, también animados).
+- 🔬 **Estegoanálisis incluido.** Chi-cuadrado (con barrido por ventanas), análisis RS, PSNR, SSIM y
+  un banco de experimentos para medir lo detectable que es cada configuración.
+- 🖥️ **Dos interfaces.** Una GUI web local, pulida y sin dependencias, y una CLI con modo guiado.
+- 🧪 **Hecho con cuidado.** 68 pruebas, CI en Windows y Linux, AddressSanitizer, UBSan y fuzzing.
+
+## La interfaz
+
+<table>
+  <tr>
+    <td width="50%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/img/gui/ocultar-oscuro.png">
+        <img src="docs/img/gui/ocultar-claro.png" alt="Pestaña Ocultar: imagen, mensaje y contraseña">
+      </picture>
+      <p align="center"><b>Ocultar</b>: arrastra una foto, escribe el mensaje y genera una contraseña</p>
+    </td>
+    <td width="50%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/img/gui/extraer-oscuro.png">
+        <img src="docs/img/gui/extraer-claro.png" alt="Pestaña Extraer con el mensaje recuperado">
+      </picture>
+      <p align="center"><b>Extraer</b>: la misma contraseña recupera el texto o el fichero</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/img/gui/ocultar-resultado-oscuro.png">
+        <img src="docs/img/gui/ocultar-resultado-claro.png" alt="Resultado: métricas y comparador antes y después">
+      </picture>
+      <p align="center"><b>Resultado</b>: comparador, diferencias ×64, lupa y métricas</p>
+    </td>
+    <td width="50%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/img/gui/experimento-graficas-oscuro.png">
+        <img src="docs/img/gui/experimento-graficas-claro.png" alt="Experimento: gráficas de distorsión y detección">
+      </picture>
+      <p align="center"><b>Experimento</b>: compara modos y cargas con tus propias fotos</p>
+    </td>
+  </tr>
+</table>
+
+Las capturas siguen el tema de tu GitHub (claro u oscuro). Recorrido completo en la
+[guía de la interfaz gráfica](docs/guias/interfaz-grafica.md).
+
+## Inicio rápido
+
+**Windows**, con las [Build Tools para Visual Studio](https://visualstudio.microsoft.com/es/downloads/)
+(«Desarrollo para el escritorio con C++»):
 
 ```bat
+git clone https://github.com/jossseluuu/I-CPU.git && cd I-CPU
 scripts\build.bat test
 build\msvc-release\apps\gui\icpu-gui.exe
 ```
 
-`build.bat` acepta `release` (por defecto), `debug`, `test` (ejecuta las pruebas) y `clean`.
-En otros sistemas: `cmake --preset release && cmake --build --preset release && ctest --preset release`.
+**Linux / macOS**: `cmake --preset release && cmake --build --preset release && ctest --preset release`.
 
-> ¿Por qué MSVC y no MinGW? Smart App Control de Windows bloquea binarios sin firma
-> reconocida, como el ensamblador y el enlazador de muchas distribuciones de MinGW.
-> Ver [ADR 0001](docs/adr/0001-compilar-con-msvc.md).
+¿Prefieres no compilar? Descarga el artefacto `icpu-windows-x64` de la última ejecución de la
+[CI](https://github.com/jossseluuu/I-CPU/actions). Detalles y problemas frecuentes: [Instalación](docs/guias/instalacion.md).
 
-## Uso
-
-### Interfaz gráfica
-
-`icpu-gui.exe` arranca un servidor **solo en 127.0.0.1** y abre el navegador. Tiene cuatro
-pestañas: *Ocultar*, *Extraer*, *Analizar* y *Experimento*. Se cierra con el botón de apagado
-(arriba a la derecha) o con Ctrl+C en la consola. Opciones: `--port N` y `--no-browser`.
-
-- **Comparador** antes/después con deslizador, vista de diferencias y **lupa** de píxeles.
-- **Medidor de capacidad** en vivo, medidor de fuerza y **generador de contraseñas**.
-- Pega imágenes con `Ctrl+V` o suéltalas en cualquier parte de la ventana.
-- **Historial** de operaciones solo en memoria: al recargar desaparece y no queda nada en el equipo.
-- Experimento con **progreso en vivo** y gráficas interactivas exportables a PNG.
-- Tema claro, oscuro o automático. Funciona **sin conexión**: no carga nada de Internet.
-- Atajos: `Ctrl+Enter` ejecuta, `Alt+1…4` cambia de
-  pestaña, `?` muestra todos.
-
-### Línea de comandos
-
-Ejecutado **sin argumentos** (o con doble clic), `icpu` entra en un **modo guiado** que pregunta
-paso a paso qué hacer; puedes arrastrar las imágenes a la consola. Con argumentos:
+### Desde la consola
 
 ```bat
-icpu embed foto.png -o secreta.png -m "mensaje"         &rem modo adaptativo; pide la contraseña
-icpu embed foto.jpg -o secreta.jpg -f documento.pdf     &rem oculta un fichero (JPEG: dominio DCT)
-icpu embed foto.png -o secreta.png -f grande.zip --mode replace  &rem más capacidad, más detectable
-icpu extract secreta.png                                &rem muestra el texto o guarda el fichero
-icpu info foto.png                                      &rem formato y capacidad en cada dominio
-icpu analyze sospechosa.png --cover original.png --export analisis\
-icpu bench foto.png --csv resultados.csv                &rem experimento sistemático
-icpu formats
+icpu embed foto.png -o foto_copia.png -m "Nos vemos a las 8"   &rem pide la contraseña sin mostrarla
+icpu extract foto_copia.png
+icpu info foto.png                                            &rem cuánto cabe
+icpu                                                          &rem modo guiado paso a paso
 ```
 
-El modo por defecto es `adaptive`: si el mensaje no cabe con una carga prudente, falla y lo explica
-en lugar de subirla. `--mode match` (±1) y `--mode replace` (sustitución, hasta 4 bits por ranura)
-admiten mucho más, a cambio de ser más detectables.
+Prueba con las demos: `icpu extract samples\demo_mensaje.jpg -p icpu-demo`.
+Referencia completa: [Línea de comandos](docs/guias/linea-de-comandos.md).
 
-La contraseña se toma, por orden, de `--password-file F`, `-p CLAVE`, la variable
-`ICPU_PASSWORD` o el teclado (sin eco). `icpu help` muestra la ayuda general con ejemplos, y
-`icpu help <comando>` (o `icpu <comando> --help`) todas las opciones de un comando.
+## Cómo funciona
 
-Códigos de salida: `0` correcto · `2` argumentos · `3` E/S · `4` formato · `5` capacidad ·
-`6` autenticación (contraseña incorrecta, sin mensaje o imagen modificada) · `70` interno.
+<p align="center"><img src="docs/img/diagramas/ocultar.svg" alt="Ocultar paso a paso: empaquetar, comprimir, cifrar y repartir con STC; la contraseña pasa por Argon2id con una sal aleatoria" width="100%"></p>
 
-### Demos
+1. El mensaje se **empaqueta**, se **comprime** y se **cifra** con XChaCha20-Poly1305.
+2. La contraseña pasa por **Argon2id** con una **sal aleatoria** nueva, que se guarda en la imagen;
+   de ahí salen tres claves: cifrado, posiciones y cabecera.
+3. **STC** elige qué muestras cambiar para escribir esos bits con el menor «coste» visual y estadístico.
 
-`samples/` contiene una portadora sintética (`paisaje.png` y `paisaje.gif`) y varias imágenes con
-mensaje. **Contraseña de las demos: `icpu-demo`**.
+<p align="center"><img src="docs/img/diagramas/modos.svg" alt="Los tres modos de escritura: sustitución LSB, LSB matching y adaptativo con STC" width="100%"></p>
 
-| Fichero | Contenido |
-| --- | --- |
-| `demo_mensaje.png` / `.jpg` / `.gif` | un texto, en cada uno de los tres dominios |
-| `demo_secuencial.png` | un fichero en orden **secuencial** (`--layout sequential`): el estegoanálisis lo detecta |
+Más a fondo: [arquitectura](docs/tecnico/arquitectura.md) · [esteganografía y STC](docs/tecnico/esteganografia.md) ·
+[criptografía](docs/tecnico/criptografia.md) · [formato v3 byte a byte](docs/tecnico/formato.md).
 
-```bat
-icpu extract samples\demo_mensaje.jpg -p icpu-demo
-icpu analyze samples\demo_secuencial.png --cover samples\paisaje.png
-```
+## Resultados
 
-Se regeneran con `python scripts\generar_muestras.py` (portadoras) y `scripts\generar_demos.bat`.
+El mismo mensaje de **12 KB** en una imagen de 480 × 320, de cuatro formas:
 
-### Experimentos
+<p align="center"><img src="docs/img/experimentos/donde-cambia-cada-modo.png" alt="Dónde cambia cada modo: el adaptativo concentra los cambios en la textura; matching y sustitución los reparten; el secuencial los pone en una franja" width="88%"></p>
 
-`experiments\run_bench.bat [imagen]` ejecuta `icpu bench` en los tres dominios y guarda los
-CSV en `experiments\output\`, que git ignora.
+| Modo | Muestras cambiadas | PSNR | Análisis RS | Lectura |
+| --- | --- | --- | --- | --- |
+| Portadora limpia | — | — | 0,01 | referencia |
+| **Adaptativo (por defecto)** | **5,9 %** | **60,4 dB** | **≈ 0,00** | menos cambios y solo en la textura |
+| LSB matching | 10,5 % | 57,9 dB | 0,01 | RS no lo ve, pero toca zonas lisas |
+| Sustitución LSB | 10,5 % | 57,9 dB | **0,23** | RS lo detecta |
+
+<p align="center">
+  <img src="docs/img/experimentos/rs-por-tamano.svg" alt="Tasa RS según el tamaño del mensaje: la sustitución crece con la carga; matching y adaptativo se quedan en el nivel de la portadora" width="49%">
+  <img src="docs/img/experimentos/barrido-chi2.svg" alt="Barrido chi-cuadrado: las ventanas señalan la franja de una inserción secuencial" width="49%">
+</p>
+
+Todas las cifras y figuras se regeneran con `node scripts/generar_figuras.mjs`. Cómo leerlas y cómo
+hacer tus propios experimentos: [guía de experimentos](docs/guias/experimentos.md).
+
+## Qué protege y qué no
+
+<p align="center"><img src="docs/img/diagramas/amenazas.svg" alt="Qué protege: el contenido (fuerte), la existencia (parcial), la integridad ante ediciones (ninguna)" width="100%"></p>
+
+- **Contenido: fuerte.** Sin la contraseña no se puede leer ni modificar sin que se note. Depende de
+  una contraseña buena: usa el generador de la GUI.
+- **Existencia: parcial.** Con el modo adaptativo y poca carga resiste los ataques clásicos, pero
+  **no es indetectable**: no se ha evaluado frente a detectores modernos, y quien tenga la original
+  puede compararla.
+- **Durabilidad: ninguna.** Recomprimir, redimensionar o editar la imagen destruye el mensaje. Las
+  redes sociales y WhatsApp recomprimen: **envíala como archivo**.
+
+I-CPU es un proyecto personal de aprendizaje. Usa primitivas criptográficas sólidas, pero **no ha
+sido auditado**. Para vulnerabilidades, sigue [SECURITY.md](SECURITY.md) y no abras un issue público.
+Antes de confiarle algo, lee las [buenas prácticas](docs/guias/buenas-practicas.md).
+
+## Documentación
+
+| Empezar | Usar | Entender |
+| --- | --- | --- |
+| [Instalación](docs/guias/instalacion.md) | [Interfaz gráfica](docs/guias/interfaz-grafica.md) | [Arquitectura](docs/tecnico/arquitectura.md) |
+| [Primeros pasos](docs/guias/primeros-pasos.md) | [Línea de comandos](docs/guias/linea-de-comandos.md) | [Esteganografía y STC](docs/tecnico/esteganografia.md) |
+| [¿Para quién es?](docs/guias/perfiles.md) | [Buenas prácticas](docs/guias/buenas-practicas.md) | [Criptografía y amenazas](docs/tecnico/criptografia.md) |
+| [Preguntas frecuentes](docs/preguntas-frecuentes.md) | [Experimentos](docs/guias/experimentos.md) | [Formato v3](docs/tecnico/formato.md) |
+| [Glosario](docs/glosario.md) | [Biblioteca C++](docs/tecnico/biblioteca.md) | [Estegoanálisis](docs/tecnico/estegoanalisis.md) |
+| [Sobre el proyecto](docs/sobre-el-proyecto.md) | [API HTTP](docs/tecnico/interfaz-web.md) | [Decisiones de diseño](docs/tecnico/decisiones-de-diseno.md) |
+
+Índice completo: [docs/](docs/README.md).
 
 ## Estructura del repositorio
 
 ```text
-include/icpu/   API pública de la biblioteca (icpu.hpp = alto nivel, report.hpp = análisis/experimentos)
-src/             implementación de la biblioteca icpu_core
-  core/          bytes, bits, errores, ficheros, JSON
-  crypto/        Argon2id, XChaCha20-Poly1305, BLAKE2b, ChaCha20, aleatorio del SO
-  compress/      DEFLATE (comprime el mensaje antes de cifrar)
-  image/         modelo raster y códecs PNG, QOI, PNM (propios), BMP y TGA (stb)
-  jpeg/          acceso a coeficientes DCT (libjpeg-turbo)
-  gif/           códec GIF/LZW propio
-  stego/         portadoras de cada dominio, orden de ranuras, carga útil y motor
-  analysis/      métricas, estegoanálisis y visualizaciones
-apps/cli/        icpu.exe
-apps/gui/        icpu-gui.exe (servidor HTTP local + web/ embebida en el ejecutable)
-tests/           pruebas doctest (imágenes generadas en código y golden/ con una real de cada formato)
-fuzz/            objetivo de fuzzing de los decodificadores (Clang + libFuzzer)
-third_party/     dependencias incluidas en el repositorio (versiones en VERSIONS.txt)
-samples/         imágenes de ejemplo y demos
-scripts/         compilación y generación de muestras
-experiments/     script de experimentos (resultados en output/, ignorado)
-docs/            arquitectura y decisiones de diseño (ADR)
+include/icpu/   API pública (icpu.hpp: embed/extract/inspect · report.hpp: analyze/bench)
+src/            biblioteca icpu_core: core, crypto, compress, image, jpeg, gif, stego, analysis
+apps/cli/       icpu.exe (comandos, ayuda y modo guiado)
+apps/gui/       icpu-gui.exe (servidor HTTP local + web embebida en el ejecutable)
+tests/          68 pruebas doctest; golden/ con imágenes reales de cada versión del formato
+fuzz/           objetivo libFuzzer para los decodificadores
+scripts/        compilación, muestras, demos y figuras de la documentación
+samples/        portadoras de ejemplo y demos (contraseña: icpu-demo)
+experiments/    script de experimentos (resultados en output/, ignorado)
+docs/           documentación, diagramas, capturas y resultados
+third_party/    dependencias incluidas (versiones en VERSIONS.txt)
 ```
-
-## Documentación
-
-- [docs/arquitectura.md](docs/arquitectura.md): cómo funciona por dentro (formato del contenedor, modos,
-  dominios, seguridad, limitaciones).
-- [docs/adr/](docs/adr/): decisiones de diseño y su porqué.
 
 ## Dependencias
 
-Todas están incluidas en `third_party/` y se compilan con el proyecto. Las versiones exactas
-están en [third_party/VERSIONS.txt](third_party/VERSIONS.txt).
+Todas están incluidas en `third_party/` y se compilan con el proyecto
+(versiones exactas en [third_party/VERSIONS.txt](third_party/VERSIONS.txt)).
 
 | Biblioteca | Uso | Licencia |
 | --- | --- | --- |
-| Monocypher 4 | Argon2id, XChaCha20-Poly1305, BLAKE2b | BSD-2 / CC0 |
-| libjpeg-turbo 3 | coeficientes DCT de JPEG | BSD-3 / IJG |
-| stb_image / stb_image_write | lectura de formatos y BMP/TGA | MIT / dominio público |
-| cpp-httplib | servidor de la GUI | MIT |
-| doctest | pruebas | MIT |
+| [Monocypher](https://monocypher.org/) 4 | Argon2id, XChaCha20-Poly1305, BLAKE2b | BSD-2 / CC0 |
+| [libjpeg-turbo](https://libjpeg-turbo.org/) 3 | coeficientes DCT de JPEG | BSD-3 / IJG |
+| [stb](https://github.com/nothings/stb) | lectura de formatos, BMP/TGA y DEFLATE | MIT / dominio público |
+| [cpp-httplib](https://github.com/yhirose/cpp-httplib) | servidor de la GUI | MIT |
+| [doctest](https://github.com/doctest/doctest) | pruebas | MIT |
 
-## Qué protege y qué no
+## Contribuir
 
-- **Contenido:** sin la contraseña no se puede leer ni alterar sin que se note. Depende de una
-  contraseña fuerte: usa el generador de la GUI.
-- **Existencia:** el modo adaptativo con poca carga resiste bien los ataques clásicos, pero **no
-  es indetectable**. Un detector moderno puede encontrar cargas altas, y no se ha evaluado frente a
-  ellos. Quien tenga la imagen original puede compararla: no reutilices ni publiques la portadora.
-- **Durabilidad:** ninguna. Recomprimir, redimensionar o editar la imagen destruye el mensaje, y las
-  redes sociales y la mensajería suelen recomprimir.
-
-I-CPU es un proyecto personal de aprendizaje. Usa primitivas criptográficas sólidas, pero
-**no ha sido auditado**.
-
-Si encuentras un problema de seguridad, sigue [SECURITY.md](SECURITY.md) y no abras un issue público.
+Se agradecen issues, ideas y pull requests: lee [CONTRIBUTING.md](CONTRIBUTING.md) y las
+[decisiones de diseño](docs/tecnico/decisiones-de-diseno.md) antes de cambiar el formato.
 
 ## Licencia
 
-[MIT](LICENSE). Las bibliotecas de `third_party/` conservan sus propias licencias (ver
-[Dependencias](#dependencias)). Los cambios entre versiones están en el [CHANGELOG](CHANGELOG.md).
+[MIT](LICENSE). Las bibliotecas de `third_party/` conservan sus propias licencias. Los cambios entre
+versiones están en el [CHANGELOG](CHANGELOG.md).

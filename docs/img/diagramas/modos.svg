@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" width="1200" height="500" role="img" aria-label="Los tres modos de escritura: sustitución LSB, LSB matching y adaptativo con STC">
+  <style>
+    .bg { fill: #ffffff; stroke: #e6e7eb; }
+    .t { font: 700 20px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .st { font: 400 13.5px 'Segoe UI', Inter, system-ui, sans-serif; fill: #6b7180; }
+    .card { fill: #f7f7f8; stroke: #e6e7eb; }
+    .best { fill: #eef0ff; stroke: #a5b4fc; stroke-width: 1.5; }
+    .h { font: 700 15px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .m { font: 600 12px ui-monospace, 'Cascadia Mono', Consolas, monospace; fill: #4f46e5; }
+    .p { font: 400 12px 'Segoe UI', Inter, system-ui, sans-serif; fill: #3c4049; }
+    .pill { font: 700 11px 'Segoe UI', Inter, system-ui, sans-serif; }
+    .bad { fill: #fdecec; } .badt { fill: #c62828; } .warn { fill: #fef5e6; } .warnt { fill: #b45309; } .ok { fill: #e9f7ee; } .okt { fill: #15803d; }
+    .bar { fill: #c7cbd3; } .bara { fill: #ea580c; } .barm { fill: #0891b2; }
+    .ax { stroke: #d4d6dc; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #15181e; stroke: #262b35; } .card { fill: #1c2028; stroke: #2c323d; } .best { fill: #20223a; stroke: #4b4f8f; }
+      .t, .h { fill: #eceef2; } .st { fill: #8f97a6; } .p { fill: #c7cbd3; } .m { fill: #a5a8ff; }
+      .bad { fill: #2c1517; } .badt { fill: #f87171; } .warn { fill: #2a2010; } .warnt { fill: #fbbf24; } .ok { fill: #12261a; } .okt { fill: #4ade80; }
+      .bar { fill: #4b5260; } .ax { stroke: #343a46; }
+    }
+  </style>
+  <rect class="bg" x=".5" y=".5" width="1199" height="499" rx="16"/>
+  <text class="t" x="32" y="46">Tres maneras de escribir los bits</text>
+  <text class="st" x="32" y="70">El cifrado protege el contenido; el modo decide cuánto se nota que hay algo. Las tres se eligen con --mode (o en «Opciones avanzadas» de la GUI).</text>
+
+  <!-- Sustitucion -->
+  <g transform="translate(32 94)">
+    <rect class="card" width="364" height="380" rx="14"/>
+    <text class="m" x="18" y="30">--mode replace</text>
+    <text class="h" x="18" y="54">Sustitución LSB</text>
+    <rect class="bad" x="252" y="16" width="96" height="22" rx="11"/><text class="pill badt" x="300" y="31" text-anchor="middle">muy detectable</text>
+    <text class="p" x="18" y="86">Sobrescribe el bit bajo: 154 → 155, 155 → 154.</text>
+    <text class="p" x="18" y="104">Los valores solo saltan dentro de su par {2i, 2i+1}.</text>
+    <!-- Histograma de pares igualados -->
+    <g transform="translate(18 124)">
+      <line class="ax" x1="0" x2="328" y1="96" y2="96"/>
+      <rect class="bar" x="8" y="26" width="16" height="70"/><rect class="bar" x="26" y="58" width="16" height="38"/>
+      <rect class="bara" x="8" y="42" width="16" height="54" opacity=".85"/><rect class="bara" x="26" y="42" width="16" height="54" opacity=".85"/>
+      <rect class="bar" x="58" y="40" width="16" height="56"/><rect class="bar" x="76" y="14" width="16" height="82"/>
+      <rect class="bara" x="58" y="27" width="16" height="69" opacity=".85"/><rect class="bara" x="76" y="27" width="16" height="69" opacity=".85"/>
+      <rect class="bar" x="108" y="50" width="16" height="46"/><rect class="bar" x="126" y="30" width="16" height="66"/>
+      <rect class="bara" x="108" y="40" width="16" height="56" opacity=".85"/><rect class="bara" x="126" y="40" width="16" height="56" opacity=".85"/>
+      <text class="p" x="160" y="40">Los pares de barras</text>
+      <text class="p" x="160" y="58">quedan a la misma</text>
+      <text class="p" x="160" y="76">altura: una huella</text>
+      <text class="p" x="160" y="94">estadística clara.</text><text class="p" x="160" y="112" opacity=".75">(gris: antes)</text>
+    </g>
+    <text class="p" x="18" y="256">Lo detectan el chi-cuadrado y el análisis RS.</text>
+    <text class="p" x="18" y="282"><tspan font-weight="700">A favor:</tspan> la mayor capacidad (hasta 4 bits</text>
+    <text class="p" x="18" y="300">por ranura con --bits) y la más rápida.</text>
+    <text class="p" x="18" y="326"><tspan font-weight="700">Úsalo para:</tspan> experimentos, o cuando el</text>
+    <text class="p" x="18" y="344">mensaje no cabe de otra forma y da igual</text>
+    <text class="p" x="18" y="362">que se sepa que hay algo.</text>
+  </g>
+
+  <!-- Matching -->
+  <g transform="translate(418 94)">
+    <rect class="card" width="364" height="380" rx="14"/>
+    <text class="m" x="18" y="30">--mode match</text>
+    <text class="h" x="18" y="54">LSB matching (±1)</text>
+    <rect class="warn" x="262" y="16" width="86" height="22" rx="11"/><text class="pill warnt" x="305" y="31" text-anchor="middle">detectable</text>
+    <text class="p" x="18" y="86">Si el bit no coincide, suma o resta 1 al azar:</text>
+    <text class="p" x="18" y="104">154 → 153 o 155. No respeta los pares.</text>
+    <g transform="translate(18 124)">
+      <line class="ax" x1="0" x2="328" y1="96" y2="96"/>
+      <rect class="bar" x="8" y="26" width="16" height="70"/><rect class="bar" x="26" y="58" width="16" height="38"/>
+      <rect class="barm" x="8" y="32" width="16" height="64" opacity=".8"/><rect class="barm" x="26" y="52" width="16" height="44" opacity=".8"/>
+      <rect class="bar" x="58" y="40" width="16" height="56"/><rect class="bar" x="76" y="14" width="16" height="82"/>
+      <rect class="barm" x="58" y="36" width="16" height="60" opacity=".8"/><rect class="barm" x="76" y="20" width="16" height="76" opacity=".8"/>
+      <rect class="bar" x="108" y="50" width="16" height="46"/><rect class="bar" x="126" y="30" width="16" height="66"/>
+      <rect class="barm" x="108" y="46" width="16" height="50" opacity=".8"/><rect class="barm" x="126" y="34" width="16" height="62" opacity=".8"/>
+      <text class="p" x="160" y="40">El histograma solo</text>
+      <text class="p" x="160" y="58">se suaviza un poco:</text>
+      <text class="p" x="160" y="76">chi-cuadrado y RS</text>
+      <text class="p" x="160" y="94">no lo ven.</text><text class="p" x="160" y="112" opacity=".75">(gris: antes)</text>
+    </g>
+    <text class="p" x="18" y="256">Pero cambia muestras al azar, también en zonas</text>
+    <text class="p" x="18" y="274">lisas, que es lo que miran los detectores modernos.</text>
+    <text class="p" x="18" y="300"><tspan font-weight="700">A favor:</tspan> la capacidad de 1 bit por ranura.</text>
+    <text class="p" x="18" y="326"><tspan font-weight="700">Úsalo para:</tspan> comparar en experimentos.</text>
+    <text class="p" x="18" y="344">Solo en el dominio espacial.</text>
+  </g>
+
+  <!-- Adaptativo -->
+  <g transform="translate(804 94)">
+    <rect class="best" width="364" height="380" rx="14"/>
+    <text class="m" x="18" y="30">--mode adaptive (por defecto)</text>
+    <text class="h" x="18" y="54">Adaptativo con STC</text>
+    <rect class="ok" x="250" y="40" width="98" height="22" rx="11"/><text class="pill okt" x="299" y="55" text-anchor="middle">menos detectable</text>
+    <text class="p" x="18" y="86">Cada ranura tiene un coste (lo que «se nota»</text>
+    <text class="p" x="18" y="104">cambiarla). STC elige los cambios más baratos.</text>
+    <g transform="translate(18 120)">
+      <defs><linearGradient id="cost" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ef4444"/><stop offset=".45" stop-color="#f59e0b"/><stop offset="1" stop-color="#22c55e"/></linearGradient></defs>
+      <rect width="150" height="100" rx="8" fill="url(#cost)" opacity=".85"/>
+      <path d="M0 62 Q25 45 45 58 T95 52 T150 56 V100 H0 Z" fill="#14532d" opacity=".35"/>
+      <text class="p" x="164" y="18">cielo liso → caro</text>
+      <text class="p" x="164" y="52">montañas → medio</text>
+      <text class="p" x="164" y="86">hierba con textura</text>
+      <text class="p" x="164" y="102">→ barato</text>
+    </g>
+    <text class="p" x="18" y="250">Con altura 8, el algoritmo de Viterbi recorre 256</text>
+    <text class="p" x="18" y="268">estados y minimiza el coste total. El receptor solo</text>
+    <text class="p" x="18" y="286">multiplica por la matriz: no necesita los costes.</text>
+    <text class="p" x="18" y="312"><tspan font-weight="700">A cambio:</tspan> cabe el 25 % (20 % en GIF) y si</text>
+    <text class="p" x="18" y="330">no cabe, falla en vez de subir la carga.</text>
+    <text class="p" x="18" y="356"><tspan font-weight="700">Úsalo para:</tspan> todo lo real.</text>
+  </g>
+</svg>

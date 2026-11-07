@@ -5,6 +5,8 @@
 
 #include <httplib.h>
 
+#include <atomic>
+#include <chrono>
 #include <thread>
 
 #include "helpers.hpp"
@@ -187,6 +189,97 @@ TEST_CASE("API: el experimento transmite el progreso y termina con el resultado"
     r = c.Post("/api/bench", s.auth(), form);
     REQUIRE(r);
     CHECK(r->body.find("\"type\":\"error\"") != std::string::npos);
+}
+
+TEST_CASE("Ciclo de vida: pestanas abiertas y cierre automatico") {
+    using namespace std::chrono_literals;
+    using Clock = gui::TabTracker::Clock;
+    const auto t0 = Clock::time_point{} + 1h;
+    gui::TabTracker tabs;
+
+    // Sin ninguna pestana todavia (p. ej. --no-browser) nunca se cierra solo.
+    CHECK_FALSE(tabs.abandoned(t0 + 1h, 10s, 150s));
+
+    tabs.seen("a", t0);
+    tabs.seen("b", t0);
+    CHECK(tabs.open_tabs(t0, 150s) == 2);
+    tabs.bye("a", t0 + 1s);
+    CHECK_FALSE(tabs.abandoned(t0 + 60s, 10s, 150s));  // queda "b"
+
+    // Recargar: la pestana se despide y vuelve a presentarse dentro del margen.
+    tabs.bye("b", t0 + 61s);
+    CHECK_FALSE(tabs.abandoned(t0 + 62s, 10s, 150s));
+    tabs.seen("b2", t0 + 62s);
+    CHECK_FALSE(tabs.abandoned(t0 + 80s, 10s, 150s));
+
+    // Cerrar la ultima pestana: se cierra pasado el margen.
+    tabs.bye("b2", t0 + 90s);
+    CHECK_FALSE(tabs.abandoned(t0 + 95s, 10s, 150s));
+    CHECK(tabs.abandoned(t0 + 100s, 10s, 150s));
+
+    // Navegador cerrado de golpe (sin despedida): la pestana caduca.
+    gui::TabTracker crash;
+    crash.seen("x", t0);
+    CHECK_FALSE(crash.abandoned(t0 + 100s, 10s, 150s));
+    CHECK(crash.open_tabs(t0 + 151s, 150s) == 0);
+    CHECK_FALSE(crash.abandoned(t0 + 155s, 10s, 150s));
+    CHECK(crash.abandoned(t0 + 162s, 10s, 150s));
+
+    // Limite defensivo de pestanas.
+    gui::TabTracker many;
+    for (std::size_t i = 0; i < gui::TabTracker::kMaxTabs + 10; ++i) many.seen(std::to_string(i), t0);
+    CHECK(many.open_tabs(t0, 150s) == gui::TabTracker::kMaxTabs);
+}
+
+TEST_CASE("API: presencia de pestanas y peticion de apagado") {
+    httplib::Server svr;
+    const std::string token = gui::new_session_token();
+    int port = 0;
+    gui::Lifecycle life;
+    std::atomic<int> shutdowns{0};
+    life.request_shutdown = [&] { ++shutdowns; };
+    gui::configure(svr, token, port, &life);
+    port = svr.bind_to_any_port("127.0.0.1");
+    REQUIRE(port > 0);
+    std::thread thread([&] { svr.listen_after_bind(); });
+    svr.wait_until_ready();
+
+    httplib::Client c("127.0.0.1", port);
+    const httplib::Headers auth{{"X-ICPU-Token", token}};
+    auto presence = [&](const std::string& tab, const std::string& event) {
+        httplib::UploadFormDataItems form{{"tab", tab, "", ""}, {"event", event, "", ""}};
+        return c.Post("/api/presence", auth, form);
+    };
+
+    auto r = presence("pestana-1", "hello");
+    REQUIRE(r);
+    CHECK(r->status == 200);
+    CHECK(life.tabs.open_tabs(gui::TabTracker::Clock::now(), std::chrono::seconds(150)) == 1);
+    r = presence("pestana-1", "bye");
+    REQUIRE(r);
+    CHECK(life.tabs.open_tabs(gui::TabTracker::Clock::now(), std::chrono::seconds(150)) == 0);
+
+    r = presence("pestana-1", "explota");
+    REQUIRE(r);
+    CHECK(r->status == 400);
+    r = presence(std::string(65, 'x'), "hello");
+    REQUIRE(r);
+    CHECK(r->status == 400);
+
+    // Sin token no se puede ni anunciar una pestana ni apagar.
+    r = c.Post("/api/shutdown", httplib::Headers{}, httplib::UploadFormDataItems{{"x", "1", "", ""}});
+    REQUIRE(r);
+    CHECK(r->status == 403);
+    CHECK(shutdowns == 0);
+
+    // Con Lifecycle, /api/shutdown delega el cierre en run_server.
+    r = c.Post("/api/shutdown", auth, httplib::UploadFormDataItems{{"x", "1", "", ""}});
+    REQUIRE(r);
+    CHECK(r->status == 200);
+    CHECK(shutdowns == 1);
+
+    svr.stop();
+    thread.join();
 }
 
 }  // TEST_SUITE gui

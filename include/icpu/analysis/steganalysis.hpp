@@ -33,10 +33,16 @@ ChiSquareResult chi_square_pairs(const std::vector<std::uint64_t>& histogram);
 
 struct ChiSquareSweep {
     std::vector<double> fraction;  // porcion de la imagen analizada (0..1]
-    std::vector<double> p_value;
+    std::vector<double> p_value;   // acumulado: muestras desde el principio hasta `fraction`
+    std::vector<double> window_p;  // por ventanas: solo las muestras entre la porcion anterior y esta
 };
 
-// Chi-cuadrado sobre prefijos crecientes de las muestras de color en orden de barrido.
+// Chi-cuadrado sobre las muestras de color en orden de barrido (filas de arriba abajo), de dos formas:
+//  - acumulado (Westfeld-Pfitzmann): prefijos crecientes. Senala una insercion secuencial que empieza
+//    al principio de la imagen, pero con muchas muestras basta un trozo sin tocar al inicio (como la
+//    cabecera del formato v3, escrita con STC) para que p caiga a 0 en todo el barrido.
+//  - por ventanas: cada porcion por separado. Marca p ~ 1 justo en las porciones con el mensaje,
+//    empiece donde empiece.
 ChiSquareSweep chi_square_sweep(const image::Raster& raster, unsigned steps = 20);
 ChiSquareResult chi_square_image(const image::Raster& raster);
 

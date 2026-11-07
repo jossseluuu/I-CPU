@@ -2,6 +2,9 @@
 
 #include <httplib.h>
 
+#include <atomic>
+#include <condition_variable>
+#include <csignal>
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
@@ -332,7 +335,11 @@ void handle_analyze(const httplib::Request& req, httplib::Response& res) {
         w.key("chi_square_sweep").begin_array();
         const auto& s = *report.chi_square_sweep;
         for (std::size_t i = 0; i < s.fraction.size(); ++i)
-            w.begin_object().field("fraction", s.fraction[i]).field("p", s.p_value[i]).end_object();
+            w.begin_object()
+                .field("fraction", s.fraction[i])
+                .field("p", s.p_value[i])
+                .field("window_p", s.window_p[i])
+                .end_object();
         w.end_array();
     }
     if (report.rs)
@@ -482,7 +489,39 @@ void open_in_browser(const std::string& url) {
 
 std::string new_session_token() { return random_token(); }
 
-void configure(httplib::Server& svr, const std::string& token, const int& port) {
+// ---- TabTracker ----
+
+void TabTracker::seen(const std::string& id, Clock::time_point now) {
+    std::lock_guard lock(mutex_);
+    if (tabs_.size() >= kMaxTabs && !tabs_.contains(id)) return;  // limite defensivo
+    tabs_[id] = now;
+    ever_ = true;
+}
+
+void TabTracker::bye(const std::string& id, Clock::time_point now) {
+    std::lock_guard lock(mutex_);
+    if (tabs_.erase(id) > 0 && tabs_.empty()) empty_since_ = now;
+}
+
+void TabTracker::prune(Clock::time_point now, Clock::duration stale) {
+    const bool had = !tabs_.empty();
+    std::erase_if(tabs_, [&](const auto& kv) { return now - kv.second > stale; });
+    if (had && tabs_.empty()) empty_since_ = now;
+}
+
+bool TabTracker::abandoned(Clock::time_point now, Clock::duration grace, Clock::duration stale) {
+    std::lock_guard lock(mutex_);
+    prune(now, stale);
+    return ever_ && tabs_.empty() && now - empty_since_ >= grace;
+}
+
+std::size_t TabTracker::open_tabs(Clock::time_point now, Clock::duration stale) {
+    std::lock_guard lock(mutex_);
+    prune(now, stale);
+    return tabs_.size();
+}
+
+void configure(httplib::Server& svr, const std::string& token, const int& port, Lifecycle* life) {
     svr.set_payload_max_length(kMaxUpload);
 
     // Comprobaciones de seguridad antes de cualquier ruta (ver server.hpp).
@@ -506,12 +545,33 @@ void configure(httplib::Server& svr, const std::string& token, const int& port) 
     svr.Post("/api/analyze", guarded(handle_analyze));
     svr.Post("/api/bench", guarded(handle_bench));
     svr.Post("/api/preview", guarded(handle_preview));
-    svr.Post("/api/shutdown", [&svr](const httplib::Request&, httplib::Response& res) {
+    svr.Post("/api/shutdown", [&svr, life](const httplib::Request&, httplib::Response& res) {
         json::Writer w;
         w.begin_object().field("ok", true).end_object();
         send_json(res, w);
-        std::thread([&svr] { svr.stop(); }).detach();
+        if (life && life->request_shutdown)
+            life->request_shutdown();  // run_server cierra el proceso tras enviar la respuesta
+        else
+            std::thread([&svr] { svr.stop(); }).detach();
     });
+    // Presencia de las pestanas: event = hello | ping | bye, tab = identificador aleatorio de la pestana.
+    svr.Post("/api/presence", guarded([life](const httplib::Request& req, httplib::Response& res) {
+        const std::string tab = field_or(req, "tab", "");
+        const std::string event = field_or(req, "event", "");
+        if (tab.empty() || tab.size() > 64) fail(ErrorCode::InvalidArgument, "Identificador de pestana invalido");
+        if (event != "hello" && event != "ping" && event != "bye")
+            fail(ErrorCode::InvalidArgument, "Evento de presencia invalido: " + event);
+        if (life) {
+            const auto now = TabTracker::Clock::now();
+            if (event == "bye")
+                life->tabs.bye(tab, now);
+            else
+                life->tabs.seen(tab, now);
+        }
+        json::Writer w;
+        w.begin_object().field("ok", true).end_object();
+        send_json(res, w);
+    }));
     svr.Get("/api/version", [](const httplib::Request&, httplib::Response& res) {
         json::Writer w;
         w.begin_object().field("version", version()).end_object();
@@ -536,11 +596,89 @@ void configure(httplib::Server& svr, const std::string& token, const int& port) 
     });
 }
 
+namespace {
+
+// Ctrl+C, Ctrl+Break o cerrar la consola. El manejador solo marca la peticion;
+// el hilo de ciclo de vida la atiende (no se puede hacer casi nada dentro de un
+// manejador de senal).
+std::atomic<bool> g_console_stop{false};
+
+#if defined(_WIN32)
+BOOL WINAPI on_console_event(DWORD type) {
+    switch (type) {
+        case CTRL_C_EVENT:
+        case CTRL_BREAK_EVENT:
+            g_console_stop = true;
+            return TRUE;
+        case CTRL_CLOSE_EVENT:
+        case CTRL_LOGOFF_EVENT:
+        case CTRL_SHUTDOWN_EVENT:
+            // Windows termina el proceso al volver de aqui: se da un momento al cierre ordenado.
+            g_console_stop = true;
+            Sleep(1500);
+            return TRUE;
+        default: return FALSE;
+    }
+}
+
+// Instancia unica: un mutex con nombre detecta si ya hay una I-CPU abierta y un
+// evento con nombre le pide que abra otra pestana. Asi no quedan servidores
+// olvidados y el token nunca sale del proceso que lo creo.
+constexpr const wchar_t* kInstanceMutex = L"Local\\ICPU-GUI-instance";
+constexpr const wchar_t* kOpenEvent = L"Local\\ICPU-GUI-open-browser";
+#else
+extern "C" void on_signal(int) { g_console_stop = true; }
+#endif
+
+constexpr auto kTabGrace = std::chrono::seconds(10);   // margen para recargar la pagina
+constexpr auto kTabStale = std::chrono::seconds(150);  // las pestanas en segundo plano avisan menos
+constexpr auto kDrainTimeout = std::chrono::seconds(2);
+
+}  // namespace
+
 int run_server(const ServerConfig& config) {
+#if defined(_WIN32)
+    HANDLE instance = CreateMutexW(nullptr, FALSE, kInstanceMutex);
+    if (instance && GetLastError() == ERROR_ALREADY_EXISTS) {
+        if (HANDLE ev = OpenEventW(EVENT_MODIFY_STATE, FALSE, kOpenEvent)) {
+            SetEvent(ev);
+            CloseHandle(ev);
+            std::cout << "I-CPU ya esta abierto: se ha abierto otra pestana en el navegador.\n";
+            CloseHandle(instance);
+            return 0;
+        }
+        // La otra instancia aun esta arrancando o cerrandose: se sigue con una nueva.
+    }
+    HANDLE open_event = CreateEventW(nullptr, FALSE, FALSE, kOpenEvent);
+    SetConsoleCtrlHandler(on_console_event, TRUE);
+#else
+    std::signal(SIGINT, on_signal);
+    std::signal(SIGTERM, on_signal);
+#endif
+
     httplib::Server svr;
     const std::string token = new_session_token();
     int port = 0;
-    configure(svr, token, port);
+
+    // Peticion de cierre: la hace el boton de la web, la consola o el vigilante de pestanas.
+    std::mutex mutex;
+    std::condition_variable cv;
+    bool shutdown_requested = false;
+    bool listen_done = false;
+    std::string reason;
+    auto request_shutdown = [&](const std::string& why) {
+        {
+            std::lock_guard lock(mutex);
+            if (shutdown_requested) return;
+            shutdown_requested = true;
+            reason = why;
+        }
+        cv.notify_all();
+    };
+
+    Lifecycle life;
+    life.request_shutdown = [&] { request_shutdown("boton de apagado de la web"); };
+    configure(svr, token, port, &life);
 
     if (config.port > 0) {
         if (!svr.bind_to_port("127.0.0.1", config.port)) {
@@ -559,12 +697,63 @@ int run_server(const ServerConfig& config) {
     const std::string url = "http://127.0.0.1:" + std::to_string(port) + "/#t=" + token;
     std::cout << "I-CPU " << version() << " - interfaz grafica\n\n"
               << "  Abre en el navegador: " << url << "\n\n"
-              << "Pulsa Ctrl+C (o el boton \"Cerrar\" de la web) para terminar.\n"
+              << "Para terminar: boton de apagado de la web, Ctrl+C aqui o cerrar todas sus pestanas.\n"
               << std::flush;
     if (config.open_browser) open_in_browser(url);
 
+    // Hilo de ciclo de vida: espera una peticion de cierre (o la detecta), detiene el
+    // servidor y, si alguna operacion no termina a tiempo, cierra el proceso igualmente.
+    std::thread lifecycle([&] {
+        std::unique_lock lock(mutex);
+        while (!shutdown_requested) {
+            cv.wait_for(lock, std::chrono::milliseconds(250));
+            if (shutdown_requested) break;
+            lock.unlock();
+            std::string why;
+            if (g_console_stop) why = "Ctrl+C o cierre de la consola";
+            else if (life.tabs.abandoned(TabTracker::Clock::now(), kTabGrace, kTabStale))
+                why = "se han cerrado todas las pestanas";
+#if defined(_WIN32)
+            if (open_event && WaitForSingleObject(open_event, 0) == WAIT_OBJECT_0) open_in_browser(url);
+#endif
+            lock.lock();
+            if (!why.empty() && !shutdown_requested) {
+                shutdown_requested = true;
+                reason = why;
+            }
+        }
+        lock.unlock();
+
+        // Deja que la respuesta de /api/shutdown llegue al navegador.
+        std::this_thread::sleep_for(std::chrono::milliseconds(300));
+        std::cout << "\nCerrando I-CPU (" << reason << ")...\n" << std::flush;
+        svr.stop();
+
+        lock.lock();
+        if (!cv.wait_for(lock, kDrainTimeout, [&] { return listen_done; })) {
+            // Una operacion larga (experimento, STC en una imagen grande) sigue en marcha.
+            // Su resultado ya no tiene a quien llegar: se cancela terminando el proceso.
+            std::cout << "Se cancelan las operaciones en curso.\nServidor cerrado.\n" << std::flush;
+            std::_Exit(0);
+        }
+    });
+
     svr.listen_after_bind();
-    std::cout << "Servidor cerrado.\n";
+    {
+        std::lock_guard lock(mutex);
+        listen_done = true;
+        if (!shutdown_requested) {  // el servidor se paro por otro motivo
+            shutdown_requested = true;
+            reason = "el servidor se ha detenido";
+        }
+    }
+    cv.notify_all();
+    lifecycle.join();
+    std::cout << "Servidor cerrado.\n" << std::flush;
+#if defined(_WIN32)
+    if (open_event) CloseHandle(open_event);
+    if (instance) CloseHandle(instance);
+#endif
     return 0;
 }
 

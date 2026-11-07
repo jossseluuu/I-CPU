@@ -138,16 +138,20 @@ function toast(text, kind = '') {
 }
 
 // Boton ocupado mientras dura una operacion; los errores se muestran como aviso.
+// `running` cuenta las operaciones en marcha (el dialogo de apagado avisa si hay alguna).
+let running = 0;
 async function withBusy(button, busyText, fn) {
   if (button.disabled) return;
   const original = [...button.childNodes];
   button.disabled = true;
   button.replaceChildren(h('span', { class: 'spinner', 'aria-hidden': 'true' }), busyText);
+  running++;
   try {
     await fn();
   } catch (e) {
-    toast(e.message, 'bad');
+    if (!serverClosed) toast(e.message, 'bad');
   } finally {
+    running--;
     button.disabled = false;
     button.replaceChildren(...original);
   }
@@ -1065,7 +1069,10 @@ async function showAnalysis(r) {
   const charts = [];
   if (r.chi_square_sweep) {
     charts.push(chartCard('Barrido chi-cuadrado', {
-      series: [{ name: 'p', cls: 's1', points: r.chi_square_sweep.map((p) => [p.fraction * 100, p.p]) }],
+      series: [
+        { name: 'Acumulado', cls: 's1', points: r.chi_square_sweep.map((p) => [p.fraction * 100, p.p]) },
+        { name: 'Por ventanas', cls: 's2', points: r.chi_square_sweep.map((p) => [p.fraction * 100, p.window_p]) },
+      ],
       xLabel: 'Porción analizada (%)', yLabel: 'p', xDomain: [0, 100], yDomain: [0, 1],
       yFmt: (v) => v.toFixed(1), tipFmt: (v) => v.toFixed(3), xFmt: (v) => Math.round(v), threshold: 0.95,
     }, 'barrido_chi2.png'));
@@ -1278,13 +1285,86 @@ $('shortcuts-close').addEventListener('click', () => $('shortcuts').close());
 // ===========================================================================
 // Arranque y cierre
 // ===========================================================================
-$('shutdown').addEventListener('click', async () => {
-  if (!confirm('¿Cerrar I-CPU? El servidor local se detendrá.')) return;
-  try { await api('/api/shutdown', new FormData()); } catch { /* ya estaba cerrado */ }
+// Cada pestana se presenta al servidor, avisa cada 20 s de que sigue abierta y se
+// despide al cerrarse. Cuando no queda ninguna, el servidor se apaga solo. El aviso
+// periodico tambien detecta que el servidor se ha cerrado desde la consola.
+const TAB_ID = Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(16).padStart(2, '0')).join('');
+const PING_MS = 20000;
+let serverClosed = false;
+let pingTimer = 0;
+let pingFailures = 0;
+
+function presence(event, keepalive = false) {
+  const form = new FormData();
+  form.append('tab', TAB_ID);
+  form.append('event', event);
+  // keepalive: la peticion sobrevive al cierre de la pestana (la despedida).
+  return fetch('/api/presence', { method: 'POST', headers: { 'X-ICPU-Token': TOKEN }, body: form, keepalive });
+}
+
+async function ping(event = 'ping') {
+  if (serverClosed || !TOKEN) return;
+  try {
+    const res = await presence(event);
+    pingFailures = res.ok ? 0 : pingFailures;
+  } catch {
+    // Dos fallos seguidos: el servidor ya no existe (Ctrl+C, consola cerrada u otra pestana lo apago).
+    if (++pingFailures >= 2) showClosed('I-CPU se ha cerrado desde la consola o desde otra pestaña.');
+  }
+}
+
+function startPresence() {
+  if (!TOKEN) return;
+  ping('hello');
+  clearInterval(pingTimer);
+  pingTimer = setInterval(ping, PING_MS);
+}
+addEventListener('pagehide', () => { if (!serverClosed && TOKEN) presence('bye', true).catch(() => {}); });
+addEventListener('pageshow', (e) => { if (e.persisted) startPresence(); }); // vuelta desde la cache de "atras"
+
+function showClosed(reason) {
+  if (serverClosed) return;
+  serverClosed = true;
+  clearInterval(pingTimer);
+  for (const d of document.querySelectorAll('dialog[open]')) d.close();
   document.querySelector('main').hidden = true;
   document.querySelector('.topbar').hidden = true;
+  $('history').hidden = true;
+  $('scrim').hidden = true;
+  $('closed-reason').textContent = reason;
   $('closed').hidden = false;
+  document.title = 'I-CPU (cerrado)';
+}
+
+$('shutdown').addEventListener('click', () => {
+  $('shutdown-busy').hidden = running === 0;
+  $('shutdown-dialog').showModal();
+  $('shutdown-cancel').focus();
 });
+$('shutdown-cancel').addEventListener('click', () => $('shutdown-dialog').close());
+$('shutdown-confirm').addEventListener('click', async () => {
+  const button = $('shutdown-confirm');
+  button.disabled = true;
+  try {
+    // El formulario no puede ir vacio: cpp-httplib rechaza (400) un multipart sin partes.
+    const form = new FormData();
+    form.append('reason', 'button');
+    await api('/api/shutdown', form);
+  } catch (e) {
+    // No se finge el cierre: si el servidor no lo ha confirmado, sigue abierto.
+    button.disabled = false;
+    $('shutdown-dialog').close();
+    toast(`No se ha podido cerrar I-CPU: ${e.message}`, 'bad');
+    return;
+  }
+  showClosed('El servidor local se ha detenido y se han cancelado las operaciones pendientes.');
+  // Los navegadores solo dejan cerrar pestanas abiertas por un programa; si no se
+  // puede, queda la pantalla de cierre.
+  setTimeout(() => window.close(), 400);
+});
+
+$('about-btn').addEventListener('click', () => $('about').showModal());
+$('about-close').addEventListener('click', () => $('about').close());
 
 (async () => {
   hydrateIcons();
@@ -1298,7 +1378,11 @@ $('shutdown').addEventListener('click', async () => {
   renderHistory();
   updateBenchCount();
   try {
-    $('version').textContent = `v${(await api('/api/version')).version}`;
+    const v = `v${(await api('/api/version')).version}`;
+    $('version').textContent = v;
+    $('version').hidden = false;
+    $('about-version').textContent = v;
+    startPresence();
   } catch (e) {
     toast(TOKEN ? e.message : 'Falta el token de sesión: abre I-CPU desde el enlace que aparece en la consola.', 'bad');
   }

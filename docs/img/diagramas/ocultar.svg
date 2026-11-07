@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" width="1200" height="560" role="img" aria-label="Cómo oculta I-CPU un mensaje: empaquetar, comprimir, cifrar y repartir con STC; la contraseña pasa por Argon2id">
+  <style>
+    .bg { fill: #ffffff; stroke: #e6e7eb; }
+    .t { font: 700 20px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .st { font: 400 13.5px 'Segoe UI', Inter, system-ui, sans-serif; fill: #6b7180; }
+    .box { fill: #f7f7f8; stroke: #e6e7eb; }
+    .in { fill: #eef0ff; stroke: #c7c9fb; }
+    .key { fill: #fef5e6; stroke: #f5d9a8; }
+    .out { fill: #e9f7ee; stroke: #b9e3c8; }
+    .h { font: 700 14px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .p { font: 400 12px 'Segoe UI', Inter, system-ui, sans-serif; fill: #3c4049; }
+    .m { font: 500 11.5px ui-monospace, 'Cascadia Mono', Consolas, monospace; fill: #4f46e5; }
+    .n { font: 800 12px 'Segoe UI', Inter, system-ui, sans-serif; fill: #ffffff; }
+    .nb { fill: #4f46e5; }
+    .a { stroke: #9aa0ab; stroke-width: 1.8; fill: none; }
+    .ak { stroke: #d39b3a; stroke-width: 1.8; fill: none; stroke-dasharray: 5 4; }
+    .lane { font: 700 11px 'Segoe UI', Inter, system-ui, sans-serif; fill: #9aa0ab; letter-spacing: 1.5px; }
+    .ah { fill: #9aa0ab; } .akh { fill: #d39b3a; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #15181e; stroke: #262b35; } .box { fill: #1c2028; stroke: #2c323d; }
+      .in { fill: #20223a; stroke: #3b3e6b; } .key { fill: #2a2010; stroke: #4d3a17; } .out { fill: #12261a; stroke: #24502f; }
+      .t, .h { fill: #eceef2; } .st { fill: #8f97a6; } .p { fill: #c7cbd3; } .m { fill: #a5a8ff; } .nb { fill: #6366f1; }
+    }
+  </style>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+    <marker id="ark" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="akh"/></marker>
+  </defs>
+  <rect class="bg" x=".5" y=".5" width="1199" height="559" rx="16"/>
+  <text class="t" x="32" y="46">Ocultar un mensaje, paso a paso</text>
+  <text class="st" x="32" y="70">Arriba, lo que se esconde; abajo, de dónde salen las claves. Nada de lo que queda en la imagen se puede reconocer sin la contraseña.</text>
+
+  <text class="lane" x="32" y="110">DATOS</text>
+  <!-- Fila de datos -->
+  <g transform="translate(32 122)">
+    <rect class="in" width="158" height="118" rx="12"/>
+    <circle class="nb" cx="22" cy="22" r="11"/><text class="n" x="22" y="26" text-anchor="middle">1</text>
+    <text class="h" x="40" y="27">Mensaje</text>
+    <text class="p" x="14" y="56">Un texto o un fichero</text>
+    <text class="p" x="14" y="74">(con su nombre)</text>
+    <text class="m" x="14" y="100">«Nos vemos a las 8»</text>
+  </g>
+  <g transform="translate(222 122)">
+    <rect class="box" width="158" height="118" rx="12"/>
+    <circle class="nb" cx="22" cy="22" r="11"/><text class="n" x="22" y="26" text-anchor="middle">2</text>
+    <text class="h" x="40" y="27">Empaquetar</text>
+    <text class="p" x="14" y="56">Tipo, nombre del fichero</text>
+    <text class="p" x="14" y="74">y tamaño original</text>
+    <text class="m" x="14" y="100">stego/payload</text>
+  </g>
+  <g transform="translate(412 122)">
+    <rect class="box" width="158" height="118" rx="12"/>
+    <circle class="nb" cx="22" cy="22" r="11"/><text class="n" x="22" y="26" text-anchor="middle">3</text>
+    <text class="h" x="40" y="27">Comprimir</text>
+    <text class="p" x="14" y="56">DEFLATE, solo si reduce.</text>
+    <text class="p" x="14" y="74">Antes de cifrar (después</text><text class="p" x="14" y="92">ya no comprime)</text>
+    <text class="m" x="14" y="110">compress/zlib</text>
+  </g>
+  <g transform="translate(602 122)">
+    <rect class="box" width="178" height="118" rx="12"/>
+    <circle class="nb" cx="22" cy="22" r="11"/><text class="n" x="22" y="26" text-anchor="middle">4</text>
+    <text class="h" x="40" y="27">Cifrar y autenticar</text>
+    <text class="p" x="14" y="56">XChaCha20-Poly1305 (AEAD).</text>
+    <text class="p" x="14" y="74">Un bit alterado → error</text>
+    <text class="m" x="14" y="100">crypto/aead</text>
+  </g>
+  <g transform="translate(812 122)">
+    <rect class="box" width="178" height="118" rx="12"/>
+    <circle class="nb" cx="22" cy="22" r="11"/><text class="n" x="22" y="26" text-anchor="middle">5</text>
+    <text class="h" x="40" y="27">Repartir con STC</text>
+    <text class="p" x="14" y="56">Elige qué muestras cambiar</text>
+    <text class="p" x="14" y="74">con el menor coste total</text>
+    <text class="m" x="14" y="100">stego/stc · engine</text>
+  </g>
+  <g transform="translate(1022 122)">
+    <rect class="out" width="146" height="118" rx="12"/>
+    <circle class="nb" cx="22" cy="22" r="11"/><text class="n" x="22" y="26" text-anchor="middle">6</text>
+    <text class="h" x="40" y="27">Imagen</text>
+    <text class="p" x="14" y="56">Mismo aspecto, mismo</text>
+    <text class="p" x="14" y="74">formato. Se relee para</text>
+    <text class="p" x="14" y="92">verificar que se extrae</text>
+  </g>
+  <path class="a" d="M190 181 H218" marker-end="url(#ar)"/>
+  <path class="a" d="M380 181 H408" marker-end="url(#ar)"/>
+  <path class="a" d="M570 181 H598" marker-end="url(#ar)"/>
+  <path class="a" d="M780 181 H808" marker-end="url(#ar)"/>
+  <path class="a" d="M990 181 H1018" marker-end="url(#ar)"/>
+
+  <!-- Portadora -->
+  <g transform="translate(812 286)">
+    <rect class="in" width="178" height="96" rx="12"/>
+    <text class="h" x="14" y="27">Portadora</text>
+    <text class="p" x="14" y="50">PNG, BMP, TGA, QOI, PNM → píxeles</text>
+    <text class="p" x="14" y="68">JPEG → coeficientes DCT</text>
+    <text class="p" x="14" y="86">GIF → índices de paleta</text>
+  </g>
+  <path class="a" d="M901 286 V244" marker-end="url(#ar)"/>
+  <text class="p" x="912" y="270">ranuras y costes</text>
+
+  <text class="lane" x="32" y="300">CLAVES</text>
+  <!-- Fila de claves -->
+  <g transform="translate(32 312)">
+    <rect class="key" width="158" height="96" rx="12"/>
+    <text class="h" x="14" y="27">Contraseña</text>
+    <text class="p" x="14" y="50">Normalizada (Unicode NFC)</text>
+    <text class="p" x="14" y="68">(la misma en Windows,</text>
+    <text class="p" x="14" y="86">Linux y el navegador)</text>
+  </g>
+  <g transform="translate(32 432)">
+    <rect class="key" width="158" height="96" rx="12"/>
+    <text class="h" x="14" y="27">Sal aleatoria</text>
+    <text class="p" x="14" y="50">16 bytes nuevos en cada</text>
+    <text class="p" x="14" y="68">inserción. Se guarda en</text>
+    <text class="p" x="14" y="86">la imagen (formato v3)</text>
+  </g>
+  <g transform="translate(232 352)">
+    <rect class="key" width="190" height="116" rx="12"/>
+    <text class="h" x="14" y="27">Argon2id</text>
+    <text class="p" x="14" y="50">64 MiB de memoria, 3 pasadas.</text>
+    <text class="p" x="14" y="68">Lenta a propósito: frena los</text>
+    <text class="p" x="14" y="86">ataques de diccionario</text>
+    <text class="m" x="14" y="106">crypto/kdf</text>
+  </g>
+  <g transform="translate(464 352)">
+    <rect class="key" width="250" height="116" rx="12"/>
+    <text class="h" x="14" y="27">Clave maestra → BLAKE2b</text>
+    <text class="p" x="14" y="50">Tres claves independientes:</text>
+    <text class="m" x="14" y="72">cifrado    → paso 4</text>
+    <text class="m" x="14" y="90">posiciones → paso 5</text>
+    <text class="m" x="14" y="108">cabecera   → paso 5</text>
+  </g>
+  <path class="ak" d="M190 360 H210 V400 H228" marker-end="url(#ark)"/>
+  <path class="ak" d="M190 480 H210 V420 H228" marker-end="url(#ark)"/>
+  <path class="ak" d="M422 410 H460" marker-end="url(#ark)"/>
+  <path class="ak" d="M690 352 V244" marker-end="url(#ark)"/>
+  <path class="ak" d="M714 395 H796 V258 H836 V244" marker-end="url(#ark)"/>
+  <path class="ak" d="M111 528 V546 H1095 V244" marker-end="url(#ark)"/>
+  <text class="p" x="760" y="540">la sal viaja dentro de la imagen, en ranuras públicas</text>
+</svg>

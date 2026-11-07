@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" width="1200" height="640" role="img" aria-label="Arquitectura de I-CPU por capas: interfaces, API, esteganografía, formatos y base">
+  <style>
+    .bg { fill: #ffffff; stroke: #e6e7eb; }
+    .t { font: 700 20px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .st { font: 400 13.5px 'Segoe UI', Inter, system-ui, sans-serif; fill: #6b7180; }
+    .layer { fill: #f7f7f8; stroke: #e6e7eb; }
+    .mod { fill: #ffffff; stroke: #d4d6dc; }
+    .l1 { fill: #eef0ff; stroke: #c7c9fb; } .l2 { fill: #f3e8ff; stroke: #dcc2f7; } .l3 { fill: #e0f2fe; stroke: #b5dcf3; }
+    .l4 { fill: #e9f7ee; stroke: #b9e3c8; } .l5 { fill: #fef5e6; stroke: #f5d9a8; } .l6 { fill: #f3f4f6; stroke: #d4d6dc; }
+    .ln { font: 800 11px 'Segoe UI', Inter, system-ui, sans-serif; fill: #6b7180; letter-spacing: 1.4px; }
+    .h { font: 700 13.5px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .m { font: 500 11.5px ui-monospace, 'Cascadia Mono', Consolas, monospace; fill: #4f46e5; }
+    .p { font: 400 11.5px 'Segoe UI', Inter, system-ui, sans-serif; fill: #3c4049; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #15181e; stroke: #262b35; } .mod { fill: #15181e; stroke: #343a46; }
+      .l1 { fill: #20223a; stroke: #3b3e6b; } .l2 { fill: #2a1f3a; stroke: #4a3566; } .l3 { fill: #10273a; stroke: #1f4a66; }
+      .l4 { fill: #12261a; stroke: #24502f; } .l5 { fill: #2a2010; stroke: #4d3a17; } .l6 { fill: #1c2028; stroke: #2c323d; }
+      .t, .h { fill: #eceef2; } .st, .ln { fill: #8f97a6; } .p { fill: #c7cbd3; } .m { fill: #a5a8ff; }
+    }
+  </style>
+  <rect class="bg" x=".5" y=".5" width="1199" height="639" rx="16"/>
+  <text class="t" x="32" y="46">Arquitectura por capas</text>
+  <text class="st" x="32" y="70">Cada capa solo usa las de debajo. Las interfaces no contienen lógica: todo está en la biblioteca icpu_core, que se puede usar sola.</text>
+
+  <!-- 1 Interfaces -->
+  <rect class="l1" x="32" y="90" width="1136" height="84" rx="14"/>
+  <text class="ln" x="48" y="112">INTERFACES · apps/</text>
+  <g transform="translate(48 120)"><rect class="mod" width="520" height="44" rx="10"/>
+    <text class="h" x="14" y="27">icpu.exe</text><text class="p" x="84" y="27">CLI: embed, extract, info, analyze, bench y modo guiado</text></g>
+  <g transform="translate(584 120)"><rect class="mod" width="568" height="44" rx="10"/>
+    <text class="h" x="14" y="27">icpu-gui.exe</text><text class="p" x="110" y="27">servidor HTTP en 127.0.0.1 + web embebida (HTML/CSS/JS propios)</text></g>
+
+  <!-- 2 API -->
+  <rect class="l2" x="32" y="186" width="1136" height="76" rx="14"/>
+  <text class="ln" x="48" y="208">API DE ALTO NIVEL · include/icpu/</text>
+  <g transform="translate(48 216)"><rect class="mod" width="520" height="38" rx="10"/>
+    <text class="m" x="14" y="24">icpu.hpp</text><text class="p" x="90" y="24">embed() · extract() · inspect()</text></g>
+  <g transform="translate(584 216)"><rect class="mod" width="568" height="38" rx="10"/>
+    <text class="m" x="14" y="24">report.hpp</text><text class="p" x="104" y="24">analyze() · bench(): informes y experimentos para CLI y GUI</text></g>
+
+  <!-- 3 Stego -->
+  <rect class="l3" x="32" y="274" width="1136" height="120" rx="14"/>
+  <text class="ln" x="48" y="296">ESTEGANOGRAFÍA · src/stego/</text>
+  <g transform="translate(48 304)"><rect class="mod" width="214" height="80" rx="10"/>
+    <text class="m" x="14" y="24">document</text><text class="p" x="14" y="46">abre la imagen en el</text><text class="p" x="14" y="64">dominio del formato de salida</text></g>
+  <g transform="translate(274 304)"><rect class="mod" width="250" height="80" rx="10"/>
+    <text class="m" x="14" y="24">pixel / dct / palette_carrier</text><text class="p" x="14" y="46">la imagen como una secuencia</text><text class="p" x="14" y="64">de «ranuras» y sus costes</text></g>
+  <g transform="translate(536 304)"><rect class="mod" width="200" height="80" rx="10"/>
+    <text class="m" x="14" y="24">engine</text><text class="p" x="14" y="46">formato v3: sal, cabecera</text><text class="p" x="14" y="64">y cuerpo; modos</text></g>
+  <g transform="translate(748 304)"><rect class="mod" width="186" height="80" rx="10"/>
+    <text class="m" x="14" y="24">stc · slot_order</text><text class="p" x="14" y="46">Viterbi sobre el trellis;</text><text class="p" x="14" y="64">permutación con ChaCha20</text></g>
+  <g transform="translate(946 304)"><rect class="mod" width="206" height="80" rx="10"/>
+    <text class="m" x="14" y="24">payload · legacy</text><text class="p" x="14" y="46">empaquetado del mensaje;</text><text class="p" x="14" y="64">lectura de v1 y v2</text></g>
+
+  <!-- 4 Formatos -->
+  <rect class="l4" x="32" y="406" width="1136" height="96" rx="14"/>
+  <text class="ln" x="48" y="428">FORMATOS DE IMAGEN · src/image, src/jpeg, src/gif</text>
+  <g transform="translate(48 436)"><rect class="mod" width="420" height="56" rx="10"/>
+    <text class="m" x="14" y="23">image/</text><text class="p" x="72" y="23">modelo raster, 8/16 bits, 1–4 canales</text><text class="p" x="14" y="43">PNG, QOI y PNM propios · BMP, TGA, PSD, HDR con stb</text></g>
+  <g transform="translate(480 436)"><rect class="mod" width="330" height="56" rx="10"/>
+    <text class="m" x="14" y="23">jpeg/</text><text class="p" x="64" y="23">libjpeg-turbo, a nivel de coeficientes</text><text class="p" x="14" y="43">lee y escribe la DCT sin recomprimir</text></g>
+  <g transform="translate(822 436)"><rect class="mod" width="330" height="56" rx="10"/>
+    <text class="m" x="14" y="23">gif/</text><text class="p" x="56" y="23">códec GIF/LZW propio</text><text class="p" x="14" y="43">conserva paletas, animación y transparencia</text></g>
+
+  <!-- 5 Base -->
+  <rect class="l5" x="32" y="514" width="1136" height="96" rx="14"/>
+  <text class="ln" x="48" y="536">BASE</text>
+  <g transform="translate(48 544)"><rect class="mod" width="290" height="56" rx="10"/>
+    <text class="m" x="14" y="23">crypto/</text><text class="p" x="78" y="23">Monocypher: Argon2id,</text><text class="p" x="14" y="43">XChaCha20-Poly1305, BLAKE2b, ChaCha20</text></g>
+  <g transform="translate(350 544)"><rect class="mod" width="250" height="56" rx="10"/>
+    <text class="m" x="14" y="23">analysis/</text><text class="p" x="92" y="23">chi², RS, chi² DCT,</text><text class="p" x="14" y="43">PSNR, SSIM y visualizaciones</text></g>
+  <g transform="translate(612 544)"><rect class="mod" width="250" height="56" rx="10"/>
+    <text class="m" x="14" y="23">compress/</text><text class="p" x="96" y="23">DEFLATE (zlib de stb)</text><text class="p" x="14" y="43">con límite de descompresión</text></g>
+  <g transform="translate(874 544)"><rect class="mod" width="278" height="56" rx="10"/>
+    <text class="m" x="14" y="23">core/</text><text class="p" x="66" y="23">bytes, bits, errores, ficheros</text><text class="p" x="14" y="43">UTF-8 en Windows y JSON</text></g>
+</svg>

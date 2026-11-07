@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 520" width="1100" height="520" role="img" aria-label="Qué significa I-CPU: Image Covert Processing Unit, y de dónde viene el nombre">
+  <style>
+    .bg { fill: #ffffff; stroke: #e6e7eb; }
+    .t { font: 700 22px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .st { font: 400 14px 'Segoe UI', Inter, system-ui, sans-serif; fill: #6b7180; }
+    .card { fill: #f7f7f8; stroke: #e6e7eb; }
+    .big { font: 800 64px 'Segoe UI', Inter, system-ui, sans-serif; fill: #4f46e5; }
+    .word { font: 700 19px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .es { font: 600 13px 'Segoe UI', Inter, system-ui, sans-serif; fill: #4f46e5; }
+    .p { font: 400 13px 'Segoe UI', Inter, system-ui, sans-serif; fill: #3c4049; }
+    .line { stroke: #d4d6dc; stroke-width: 2; }
+    .dot { fill: #ffffff; stroke: #4f46e5; stroke-width: 3; }
+    .dotf { fill: #4f46e5; }
+    .h { font: 700 14px 'Segoe UI', Inter, system-ui, sans-serif; fill: #111318; }
+    .d { font: 400 12.5px 'Segoe UI', Inter, system-ui, sans-serif; fill: #6b7180; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #15181e; stroke: #262b35; } .card { fill: #1c2028; stroke: #2c323d; }
+      .t, .word, .h { fill: #eceef2; } .st, .d { fill: #8f97a6; } .p { fill: #c7cbd3; }
+      .big, .es { fill: #8b8cff; } .dotf { fill: #8b8cff; } .dot { fill: #15181e; stroke: #8b8cff; } .line { stroke: #343a46; }
+    }
+  </style>
+  <rect class="bg" x=".5" y=".5" width="1099" height="519" rx="16"/>
+  <text class="t" x="32" y="48">¿Por qué «I-CPU»?</text>
+  <text class="st" x="32" y="72">Nació como un «procesador de imágenes»: un programa que interpreta cada imagen pieza a pieza. El nombre se quedó y ganó un significado.</text>
+
+  <!-- Las cuatro letras -->
+  <g transform="translate(32 96)">
+    <rect class="card" width="244" height="210" rx="14"/>
+    <text class="big" x="22" y="78">I</text><text class="word" x="64" y="62">Image</text><text class="es" x="64" y="82">imagen</text>
+    <text class="p" x="22" y="118">La imagen es a la vez el medio</text>
+    <text class="p" x="22" y="138">y el disfraz: una foto corriente</text>
+    <text class="p" x="22" y="158">que no llama la atención.</text>
+  </g>
+  <g transform="translate(296 96)">
+    <rect class="card" width="244" height="210" rx="14"/>
+    <text class="big" x="22" y="78">C</text><text class="word" x="74" y="62">Covert</text><text class="es" x="74" y="82">encubierto</text>
+    <text class="p" x="22" y="118">El mensaje no solo va cifrado:</text>
+    <text class="p" x="22" y="138">va escondido, para que no se sepa</text>
+    <text class="p" x="22" y="158">siquiera que existe.</text>
+  </g>
+  <g transform="translate(560 96)">
+    <rect class="card" width="244" height="210" rx="14"/>
+    <text class="big" x="22" y="78">P</text><text class="word" x="70" y="62">Processing</text><text class="es" x="70" y="82">procesamiento</text>
+    <text class="p" x="22" y="118">Píxeles, coeficientes DCT o colores</text>
+    <text class="p" x="22" y="138">de paleta: cada pieza de la imagen</text>
+    <text class="p" x="22" y="158">se procesa como una «ranura».</text>
+  </g>
+  <g transform="translate(824 96)">
+    <rect class="card" width="244" height="210" rx="14"/>
+    <text class="big" x="22" y="78">U</text><text class="word" x="74" y="62">Unit</text><text class="es" x="74" y="82">unidad</text>
+    <text class="p" x="22" y="118">Autónoma, como un chip:</text>
+    <text class="p" x="22" y="138">biblioteca, CLI y GUI en un solo</text>
+    <text class="p" x="22" y="158">programa y sin conexión.</text>
+  </g>
+
+  <!-- Historia -->
+  <text class="h" x="32" y="352">De dónde viene</text>
+  <line class="line" x1="60" x2="1040" y1="404" y2="404"/>
+  <g>
+    <circle class="dot" cx="120" cy="404" r="9"/>
+    <text class="h" x="120" y="440" text-anchor="middle">La idea</text>
+    <text class="d" x="120" y="460" text-anchor="middle">un procesador</text>
+    <text class="d" x="120" y="477" text-anchor="middle">o intérprete de imágenes</text>
+
+    <circle class="dot" cx="320" cy="404" r="9"/>
+    <text class="h" x="320" y="440" text-anchor="middle">Umbra</text>
+    <text class="d" x="320" y="460" text-anchor="middle">«sombra» en latín: el primer nombre.</text>
+    <text class="d" x="320" y="477" text-anchor="middle">De ahí la luna del logo.</text>
+
+    <circle class="dot" cx="560" cy="404" r="9"/>
+    <text class="h" x="560" y="440" text-anchor="middle">I-CPU 1.0</text>
+    <text class="d" x="560" y="460" text-anchor="middle">nombre definitivo;</text>
+    <text class="d" x="560" y="477" text-anchor="middle">primer programa completo</text>
+
+    <circle class="dot" cx="790" cy="404" r="9"/>
+    <text class="h" x="790" y="440" text-anchor="middle">I-CPU 1.5</text>
+    <text class="d" x="790" y="460" text-anchor="middle">cabecera cifrada,</text>
+    <text class="d" x="790" y="477" text-anchor="middle">GUI nueva y modo guiado</text>
+
+    <circle class="dotf" cx="1020" cy="404" r="11"/>
+    <text class="h" x="1020" y="440" text-anchor="middle">I-CPU 2.0</text>
+    <text class="d" x="1020" y="460" text-anchor="middle">STC adaptativo</text>
+    <text class="d" x="1020" y="477" text-anchor="middle">y formato v3</text>
+  </g>
+</svg>

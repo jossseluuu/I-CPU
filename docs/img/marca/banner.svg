@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 340" width="1280" height="340" role="img" aria-label="I-CPU, Image Covert Processing Unit: esteganografía cifrada en imágenes">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1b2140"/>
+      <stop offset=".55" stop-color="#121628"/>
+      <stop offset="1" stop-color="#0c0f1a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".22" cy=".45" r=".5">
+      <stop offset="0" stop-color="#6366f1" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#6366f1" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="chip" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2b3350"/>
+      <stop offset="1" stop-color="#121624"/>
+    </linearGradient>
+    <linearGradient id="moon" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#c9cdf7"/>
+    </linearGradient>
+    <mask id="crescent">
+      <rect width="1280" height="340" fill="#fff"/>
+      <circle cx="196.25" cy="142.5" r="46.25" fill="#000"/>
+    </mask>
+    <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="1"/>
+    </linearGradient>
+    <mask id="gridfade"><rect width="1280" height="340" fill="url(#fade)"/></mask>
+  </defs>
+
+  <rect width="1280" height="340" rx="22" fill="url(#bg)"/>
+  <rect width="1280" height="340" rx="22" fill="url(#glow)"/>
+
+  <!-- Rejilla de "pixeles" que se desvanece hacia la izquierda: algunos llevan datos -->
+  <g mask="url(#gridfade)" opacity=".55">
+    <g fill="#ffffff" fill-opacity=".05">
+      <rect x="820" y="26" width="22" height="22" rx="4"/><rect x="848" y="26" width="22" height="22" rx="4"/><rect x="876" y="26" width="22" height="22" rx="4"/><rect x="904" y="26" width="22" height="22" rx="4"/><rect x="932" y="26" width="22" height="22" rx="4"/><rect x="960" y="26" width="22" height="22" rx="4"/><rect x="988" y="26" width="22" height="22" rx="4"/><rect x="1016" y="26" width="22" height="22" rx="4"/><rect x="1044" y="26" width="22" height="22" rx="4"/><rect x="1072" y="26" width="22" height="22" rx="4"/><rect x="1100" y="26" width="22" height="22" rx="4"/><rect x="1128" y="26" width="22" height="22" rx="4"/><rect x="1156" y="26" width="22" height="22" rx="4"/><rect x="1184" y="26" width="22" height="22" rx="4"/><rect x="1212" y="26" width="22" height="22" rx="4"/>
+      <rect x="820" y="54" width="22" height="22" rx="4"/><rect x="848" y="54" width="22" height="22" rx="4"/><rect x="876" y="54" width="22" height="22" rx="4"/><rect x="904" y="54" width="22" height="22" rx="4"/><rect x="932" y="54" width="22" height="22" rx="4"/><rect x="960" y="54" width="22" height="22" rx="4"/><rect x="988" y="54" width="22" height="22" rx="4"/><rect x="1016" y="54" width="22" height="22" rx="4"/><rect x="1044" y="54" width="22" height="22" rx="4"/><rect x="1072" y="54" width="22" height="22" rx="4"/><rect x="1100" y="54" width="22" height="22" rx="4"/><rect x="1128" y="54" width="22" height="22" rx="4"/><rect x="1156" y="54" width="22" height="22" rx="4"/><rect x="1184" y="54" width="22" height="22" rx="4"/><rect x="1212" y="54" width="22" height="22" rx="4"/>
+      <rect x="820" y="82" width="22" height="22" rx="4"/><rect x="848" y="82" width="22" height="22" rx="4"/><rect x="876" y="82" width="22" height="22" rx="4"/><rect x="904" y="82" width="22" height="22" rx="4"/><rect x="932" y="82" width="22" height="22" rx="4"/><rect x="960" y="82" width="22" height="22" rx="4"/><rect x="988" y="82" width="22" height="22" rx="4"/><rect x="1016" y="82" width="22" height="22" rx="4"/><rect x="1044" y="82" width="22" height="22" rx="4"/><rect x="1072" y="82" width="22" height="22" rx="4"/><rect x="1100" y="82" width="22" height="22" rx="4"/><rect x="1128" y="82" width="22" height="22" rx="4"/><rect x="1156" y="82" width="22" height="22" rx="4"/><rect x="1184" y="82" width="22" height="22" rx="4"/><rect x="1212" y="82" width="22" height="22" rx="4"/>
+      <rect x="820" y="110" width="22" height="22" rx="4"/><rect x="848" y="110" width="22" height="22" rx="4"/><rect x="876" y="110" width="22" height="22" rx="4"/><rect x="904" y="110" width="22" height="22" rx="4"/><rect x="932" y="110" width="22" height="22" rx="4"/><rect x="960" y="110" width="22" height="22" rx="4"/><rect x="988" y="110" width="22" height="22" rx="4"/><rect x="1016" y="110" width="22" height="22" rx="4"/><rect x="1044" y="110" width="22" height="22" rx="4"/><rect x="1072" y="110" width="22" height="22" rx="4"/><rect x="1100" y="110" width="22" height="22" rx="4"/><rect x="1128" y="110" width="22" height="22" rx="4"/><rect x="1156" y="110" width="22" height="22" rx="4"/><rect x="1184" y="110" width="22" height="22" rx="4"/><rect x="1212" y="110" width="22" height="22" rx="4"/>
+      <rect x="820" y="138" width="22" height="22" rx="4"/><rect x="848" y="138" width="22" height="22" rx="4"/><rect x="876" y="138" width="22" height="22" rx="4"/><rect x="904" y="138" width="22" height="22" rx="4"/><rect x="932" y="138" width="22" height="22" rx="4"/><rect x="960" y="138" width="22" height="22" rx="4"/><rect x="988" y="138" width="22" height="22" rx="4"/><rect x="1016" y="138" width="22" height="22" rx="4"/><rect x="1044" y="138" width="22" height="22" rx="4"/><rect x="1072" y="138" width="22" height="22" rx="4"/><rect x="1100" y="138" width="22" height="22" rx="4"/><rect x="1128" y="138" width="22" height="22" rx="4"/><rect x="1156" y="138" width="22" height="22" rx="4"/><rect x="1184" y="138" width="22" height="22" rx="4"/><rect x="1212" y="138" width="22" height="22" rx="4"/>
+      <rect x="820" y="166" width="22" height="22" rx="4"/><rect x="848" y="166" width="22" height="22" rx="4"/><rect x="876" y="166" width="22" height="22" rx="4"/><rect x="904" y="166" width="22" height="22" rx="4"/><rect x="932" y="166" width="22" height="22" rx="4"/><rect x="960" y="166" width="22" height="22" rx="4"/><rect x="988" y="166" width="22" height="22" rx="4"/><rect x="1016" y="166" width="22" height="22" rx="4"/><rect x="1044" y="166" width="22" height="22" rx="4"/><rect x="1072" y="166" width="22" height="22" rx="4"/><rect x="1100" y="166" width="22" height="22" rx="4"/><rect x="1128" y="166" width="22" height="22" rx="4"/><rect x="1156" y="166" width="22" height="22" rx="4"/><rect x="1184" y="166" width="22" height="22" rx="4"/><rect x="1212" y="166" width="22" height="22" rx="4"/>
+      <rect x="820" y="194" width="22" height="22" rx="4"/><rect x="848" y="194" width="22" height="22" rx="4"/><rect x="876" y="194" width="22" height="22" rx="4"/><rect x="904" y="194" width="22" height="22" rx="4"/><rect x="932" y="194" width="22" height="22" rx="4"/><rect x="960" y="194" width="22" height="22" rx="4"/><rect x="988" y="194" width="22" height="22" rx="4"/><rect x="1016" y="194" width="22" height="22" rx="4"/><rect x="1044" y="194" width="22" height="22" rx="4"/><rect x="1072" y="194" width="22" height="22" rx="4"/><rect x="1100" y="194" width="22" height="22" rx="4"/><rect x="1128" y="194" width="22" height="22" rx="4"/><rect x="1156" y="194" width="22" height="22" rx="4"/><rect x="1184" y="194" width="22" height="22" rx="4"/><rect x="1212" y="194" width="22" height="22" rx="4"/>
+      <rect x="820" y="222" width="22" height="22" rx="4"/><rect x="848" y="222" width="22" height="22" rx="4"/><rect x="876" y="222" width="22" height="22" rx="4"/><rect x="904" y="222" width="22" height="22" rx="4"/><rect x="932" y="222" width="22" height="22" rx="4"/><rect x="960" y="222" width="22" height="22" rx="4"/><rect x="988" y="222" width="22" height="22" rx="4"/><rect x="1016" y="222" width="22" height="22" rx="4"/><rect x="1044" y="222" width="22" height="22" rx="4"/><rect x="1072" y="222" width="22" height="22" rx="4"/><rect x="1100" y="222" width="22" height="22" rx="4"/><rect x="1128" y="222" width="22" height="22" rx="4"/><rect x="1156" y="222" width="22" height="22" rx="4"/><rect x="1184" y="222" width="22" height="22" rx="4"/><rect x="1212" y="222" width="22" height="22" rx="4"/>
+    </g>
+    <rect x="904" y="54" width="22" height="22" rx="4" fill="#60a5fa"/>
+    <rect x="1016" y="82" width="22" height="22" rx="4" fill="#a78bfa"/>
+    <rect x="1128" y="54" width="22" height="22" rx="4" fill="#34d399"/>
+    <rect x="960" y="138" width="22" height="22" rx="4" fill="#a78bfa"/>
+    <rect x="1072" y="166" width="22" height="22" rx="4" fill="#60a5fa"/>
+    <rect x="1184" y="138" width="22" height="22" rx="4" fill="#34d399"/>
+    <rect x="1100" y="222" width="22" height="22" rx="4" fill="#a78bfa"/>
+  </g>
+
+  <!-- Logo grande -->
+  <g transform="translate(70 70)">
+    <g fill="#7c83c9" opacity=".75">
+      <rect x="56" y="0" width="12" height="16" rx="3"/><rect x="94" y="0" width="12" height="16" rx="3"/><rect x="132" y="0" width="12" height="16" rx="3"/>
+      <rect x="56" y="184" width="12" height="16" rx="3"/><rect x="94" y="184" width="12" height="16" rx="3"/><rect x="132" y="184" width="12" height="16" rx="3"/>
+      <rect x="0" y="56" width="16" height="12" rx="3"/><rect x="0" y="94" width="16" height="12" rx="3"/><rect x="0" y="132" width="16" height="12" rx="3"/>
+      <rect x="184" y="56" width="16" height="12" rx="3"/><rect x="184" y="94" width="16" height="12" rx="3"/><rect x="184" y="132" width="16" height="12" rx="3"/>
+    </g>
+    <rect x="12" y="12" width="176" height="176" rx="40" fill="url(#chip)" stroke="#ffffff" stroke-opacity=".1" stroke-width="2"/>
+  </g>
+  <circle cx="164" cy="161" r="50" fill="url(#moon)" mask="url(#crescent)"/>
+  <circle cx="216" cy="117" r="5.5" fill="#fff" opacity=".85"/>
+  <rect x="129" y="210" width="20" height="20" rx="4.5" fill="#60a5fa"/>
+  <rect x="159" y="220" width="20" height="20" rx="4.5" fill="#a78bfa"/>
+  <rect x="189" y="210" width="20" height="20" rx="4.5" fill="#34d399"/>
+
+  <!-- Texto -->
+  <g font-family="'Segoe UI', Inter, system-ui, sans-serif">
+    <text x="320" y="138" font-size="84" font-weight="800" fill="#ffffff" letter-spacing="-2">I-CPU</text>
+    <text x="324" y="180" font-size="24" font-weight="500" fill="#c7cbf5" letter-spacing=".5"><tspan font-weight="800" fill="#a5a8ff">I</tspan>mage <tspan font-weight="800" fill="#a5a8ff">C</tspan>overt <tspan font-weight="800" fill="#a5a8ff">P</tspan>rocessing <tspan font-weight="800" fill="#a5a8ff">U</tspan>nit</text>
+    <text x="324" y="222" font-size="19" fill="#9aa1c4">Esteganografía cifrada: esconde textos y ficheros dentro de imágenes PNG, JPEG y GIF.</text>
+    <g font-size="14" font-weight="600">
+      <rect x="324" y="248" width="236" height="32" rx="16" fill="#ffffff" fill-opacity=".08" stroke="#ffffff" stroke-opacity=".12"/>
+      <text x="442" y="269" text-anchor="middle" fill="#dfe1ff">Argon2id · XChaCha20-Poly1305</text>
+      <rect x="572" y="248" width="196" height="32" rx="16" fill="#ffffff" fill-opacity=".08" stroke="#ffffff" stroke-opacity=".12"/>
+      <text x="670" y="269" text-anchor="middle" fill="#dfe1ff">STC adaptativo (HILL/UERD)</text>
+      <rect x="780" y="248" width="170" height="32" rx="16" fill="#ffffff" fill-opacity=".08" stroke="#ffffff" stroke-opacity=".12"/>
+      <text x="865" y="269" text-anchor="middle" fill="#dfe1ff">Estegoanálisis incluido</text>
+      <rect x="962" y="248" width="150" height="32" rx="16" fill="#ffffff" fill-opacity=".08" stroke="#ffffff" stroke-opacity=".12"/>
+      <text x="1037" y="269" text-anchor="middle" fill="#dfe1ff">C++20 · CLI y GUI</text>
+    </g>
+  </g>
+</svg>

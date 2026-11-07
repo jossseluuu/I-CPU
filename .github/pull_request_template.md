@@ -8,4 +8,5 @@
 - [ ] He añadido o actualizado pruebas en `tests/` si cambia el comportamiento
 - [ ] He actualizado la documentación (README, `docs/`) y el `CHANGELOG.md` si hace falta
 - [ ] **Formato oculto:** el cambio no altera las imágenes que se generan o extraen
-      (si lo hace, explícalo y propón un ADR nuevo en `docs/adr/`)
+      (si lo hace, explícalo y añade una decisión nueva en `docs/tecnico/decisiones-de-diseno.md`;
+      casi cualquier cambio exige una versión nueva del formato)
